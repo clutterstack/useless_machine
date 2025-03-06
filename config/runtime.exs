@@ -51,6 +51,8 @@ if config_env() == :prod do
 
   config :useless_machine, UselessMachineWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
+      # Add this line to allow localhost:8080 as a valid origin
+    check_origin: ["http://localhost:8080"],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.

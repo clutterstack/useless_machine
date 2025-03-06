@@ -13,7 +13,7 @@ pre.ascii-art {
   line-height: 1em;
   height: 30lh;
   /* background-color: black; */
-  color: red;
+  color: rgb(215, 215, 215);
   /* margin: auto; */
   /* white-space: pre; */
   /* @apply text-[10px]leading-none; */

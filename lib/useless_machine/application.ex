@@ -13,7 +13,7 @@ defmodule UselessMachine.Application do
       {Ecto.Migrator,
         repos: Application.fetch_env!(:useless_machine, :ecto_repos),
         skip: skip_migrations?()},
-      {DNSCluster, query: Application.get_env(:useless_machine, :dns_cluster_query) || :ignore},
+      # {DNSCluster, query: Application.get_env(:useless_machine, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: UselessMachine.PubSub},
       {Task.Supervisor, name: UselessMachine.TaskSupervisor},
       # Start a worker by calling: UselessMachine.Worker.start_link(arg)

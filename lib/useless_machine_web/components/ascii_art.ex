@@ -11,7 +11,7 @@ defmodule UselessMachineWeb.AsciiArt do
         |> dbg
         |> File.read!()
       else
-        # IO.puts("No assign `file_path`")
+        IO.puts("No assign `file_path`")
         ""
       end
 

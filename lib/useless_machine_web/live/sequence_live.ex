@@ -5,9 +5,8 @@ defmodule UselessMachineWeb.SequenceLive do
 
   # Define module attributes
   @initial_dwell 2000 # milliseconds before animation starts
-  @display_time 500 # milliseconds between messages
-  @ascii_dir "priv/static/ascii"
-
+  @display_time 120 # milliseconds between messages
+  @ascii_dir "ascii"
 
   def mount(_params, _session, socket) do
     # Start the sequence on mount
@@ -19,8 +18,8 @@ defmodule UselessMachineWeb.SequenceLive do
       current_file: nil,
       text_index: 0,
       sequence_complete: false,
-      files: get_ascii_files(@ascii_dir),
-      num_files: length(get_ascii_files(@ascii_dir)),
+      files: get_static_files(@ascii_dir),
+      num_files: length(get_static_files(@ascii_dir)),
       really_done: false
     )}
   end
@@ -98,20 +97,53 @@ defmodule UselessMachineWeb.SequenceLive do
     # {:noreply, socket}
     # Schedule the actual system halt with a small delay
     # to allow the final message to be rendered
-    Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
-      # Process.sleep(50)
-      System.stop(0)
-    end)
+    # Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
+      # System.stop(0)
+    # end)
 
     {:noreply, socket}
   end
 
   # Helpers
-  def get_ascii_files(dir) do
-    with {:ok, files} <- File.ls(dir) do
+  # def get_ascii_files(dir) do
+  #   IO.inspect(dir, label: "dir passed to get_ascii_files")
+  #   File.ls(dir) |> dbg
+  #   with {:ok, files} <- File.ls(dir) do
+  #     files
+  #     |> Enum.sort
+  #     |> Enum.map(fn file -> Path.join([dir, file]) end)
+  #   end
+  # end
+
+  # def get_static_files(dir) do
+  #   priv_dir = :code.priv_dir(:useless_machine)
+  #   full_path = Path.join([priv_dir, "static", dir])
+  #   |> dbg
+  #   File.ls(full_path) |> dbg
+  #   case File.ls(full_path) do
+  #     {:ok, files} ->
+  #       files
+  #       |> Enum.sort
+  #       |> Enum.map(fn file -> Path.join([dir, file]) end)
+  #     {:error, reason} -> {:error, reason}
+  #   end
+  # end
+
+  @doc """
+  Returns the number of files in the static/ascii directory based on the manifest.
+  """
+  def get_static_files(dirname) do
+    # Get the static path configuration
+    static_path = Application.app_dir(:useless_machine, ["priv", "static", dirname])
+
+    with {:ok, files} <- File.ls(static_path) do
       files
+      |> dbg
+      |> Enum.filter(&String.ends_with?(&1, ".txt"))
       |> Enum.sort
-      |> Enum.map(fn file -> Path.join([dir, file]) end)
+      |> Enum.map(fn file -> Path.join([static_path, file]) end)
+    else
+      {:error, reason} -> {:error, reason}
     end
   end
 

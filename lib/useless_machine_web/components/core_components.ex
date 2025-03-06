@@ -168,7 +168,7 @@ defmodule UselessMachineWeb.CoreComponents do
         phx-connected={hide("#server-error")}
         hidden
       >
-        (The Useless Machine is never coming back.)
+        (This Useless Machine is never coming back.)
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
       </.flash>
     </div>
