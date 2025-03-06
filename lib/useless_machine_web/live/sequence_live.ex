@@ -66,34 +66,42 @@ defmodule UselessMachineWeb.SequenceLive do
   # current_file: Enum.at(socket.assigns.files, 0),
 
   def handle_info(:next_text, socket) do
-    next_index = socket.assigns.text_index
+    text_index = socket.assigns.text_index
     files = socket.assigns.files
     num_files = socket.assigns.num_files
 
-    if next_index < (num_files - 1) do
+    cond do
+    text_index < (num_files - 1) ->
       # Display the next text and schedule the following one
       Process.send_after(self(), :next_text, @display_time)
       {:noreply, assign(socket,
-        current_file: Enum.at(files, next_index),
-        text_index: next_index + 1
+        current_file: Enum.at(files, text_index),
+        text_index: text_index + 1
       )}
-    else
+    text_index < (num_files) ->
       # All texts displayed, prepare for shutdown
-      Process.send_after(self(), :shutdown_app, 10)
-      {:noreply, assign(socket, sequence_complete: true)}
+      Process.send_after(self(), :next_text, 10)
+      {:noreply, assign(socket,
+        current_file: Enum.at(files, text_index),
+        text_index: text_index + 1,
+        sequence_complete: true
+        )}
+    true ->
+      Process.send_after(self(), :shutdown_app, 50)
+      {:noreply, socket}
     end
   end
 
   def handle_info(:shutdown_app, socket) do
     # Log shutdown message
     Logger.info("Sequence complete, shutting down application")
-    {:noreply, assign(socket, sequence_complete: true)}
+    # {:noreply, socket}
     # Schedule the actual system halt with a small delay
     # to allow the final message to be rendered
-    # Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
-    #   Process.sleep(500)
-    #   System.stop(0)
-    # end)
+    Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
+      Process.sleep(200)
+      System.stop(0)
+    end)
 
     {:noreply, socket}
   end
