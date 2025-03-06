@@ -1,3 +1,11 @@
+# Stuff
+.DS_Store
+lib/useless_machine/release.ex
+/rel/
+.github/
+.dockerignore
+fly.toml
+
 # The directory Mix will write compiled artifacts to.
 /_build/
 
