@@ -20,9 +20,9 @@ defmodule UselessMachineWeb.SequenceLive do
       text_index: 0,
       sequence_complete: false,
       files: get_ascii_files(@ascii_dir),
-      num_files: length(get_ascii_files(@ascii_dir))
-    ),
-      layout: false}
+      num_files: length(get_ascii_files(@ascii_dir)),
+      really_done: false
+    )}
   end
 
   def render(assigns) do
@@ -33,14 +33,11 @@ defmodule UselessMachineWeb.SequenceLive do
 
         <div class="flex items-center justify-center">
           <AsciiArt.ascii_art file_path={@current_file} bg_class="bg-[#240000]"/>
+          <div class="h-full bg-black"> </div>
         </div>
 
         <div class="mt-4 text-sm text-gray-600">
-          <%= if @sequence_complete do %>
-            <p>Sequence complete. Shutting down...</p>
-          <% else %>
-            <p>Displaying message <%= @text_index %> of <%= @num_files %></p>
-          <% end %>
+          <p>Displaying message <%= @text_index %> of <%= @num_files %></p>
         </div>
       </div>
       """
@@ -52,8 +49,9 @@ defmodule UselessMachineWeb.SequenceLive do
           <div class="flex items-center justify-center">
             <AsciiArt.ascii_art file_path={@current_file} />
           </div>
-          </div>
+        </div>
       </div>
+
       """
     end
   end
@@ -87,10 +85,12 @@ defmodule UselessMachineWeb.SequenceLive do
         sequence_complete: true
         )}
     true ->
-      Process.send_after(self(), :shutdown_app, 50)
+      Process.send_after(self(), :shutdown_app, 10)
       {:noreply, socket}
     end
   end
+
+  # assign(socket, really_done: true)
 
   def handle_info(:shutdown_app, socket) do
     # Log shutdown message
@@ -99,7 +99,7 @@ defmodule UselessMachineWeb.SequenceLive do
     # Schedule the actual system halt with a small delay
     # to allow the final message to be rendered
     Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
-      Process.sleep(200)
+      # Process.sleep(50)
       System.stop(0)
     end)
 
