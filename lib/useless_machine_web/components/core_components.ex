@@ -151,7 +151,7 @@ defmodule UselessMachineWeb.CoreComponents do
       <.flash
         id="client-error"
         kind={:error}
-        title="We can't find the internet"
+        title="A client error occurred."
         phx-disconnected={show(".phx-client-error #client-error")}
         phx-connected={hide("#client-error")}
         hidden
@@ -163,7 +163,7 @@ defmodule UselessMachineWeb.CoreComponents do
       <.flash
         id="server-error"
         kind={:error}
-        title="Something went wrong!"
+        title="A server error occurred."
         phx-disconnected={show(".phx-server-error #server-error")}
         phx-connected={hide("#server-error")}
         hidden
