@@ -17,16 +17,8 @@ defmodule UselessMachineWeb.Router do
 
   scope "/", UselessMachineWeb do
     pipe_through :browser
-    get "/", PageController, :home
-    live "/:mach_id", SequenceLive
-    live "/nomachine", SequenceLive
     get "/machine/:mach_id", PageController, :replay_to_machine
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", UselessMachineWeb do
-  #   pipe_through :api
-  # end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:useless_machine, :dev_routes) do
@@ -37,9 +29,9 @@ defmodule UselessMachineWeb.Router do
     # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
-    scope "/dev" do
+    scope "/dev", UselessMachineWeb do
       pipe_through :browser
-
+      live "/", SequenceLive
       live_dashboard "/dashboard", metrics: UselessMachineWeb.Telemetry
     end
   end

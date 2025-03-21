@@ -18,7 +18,7 @@ defmodule UselessMachine.SelfDestruct do
 
   # Use Task.Supervisor for a controlled shutdown, though in this case
   # simply issuing System.stop(0) seems just as appropriate
-  def handle_info(:shutoff, state) do
+  def handle_info(:shutoff, _state) do
     Logger.debug("reached TTL; shutting down")
     Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
       System.stop(0)
