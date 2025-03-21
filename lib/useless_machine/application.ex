@@ -8,18 +8,19 @@ defmodule UselessMachine.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      UselessMachineWeb.Telemetry,
-      UselessMachine.Repo,
-      {Ecto.Migrator,
-        repos: Application.fetch_env!(:useless_machine, :ecto_repos),
-        skip: skip_migrations?()},
+      #UselessMachineWeb.Telemetry,
+      # UselessMachine.Repo,
+      # {Ecto.Migrator,
+        # repos: Application.fetch_env!(:useless_machine, :ecto_repos),
+        # skip: skip_migrations?()},
       # {DNSCluster, query: Application.get_env(:useless_machine, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: UselessMachine.PubSub},
       {Task.Supervisor, name: UselessMachine.TaskSupervisor},
       # Start a worker by calling: UselessMachine.Worker.start_link(arg)
       # {UselessMachine.Worker, arg},
       # Start to serve requests, typically the last entry
-      UselessMachineWeb.Endpoint
+      UselessMachineWeb.Endpoint,
+      UselessMachine.SelfDestruct
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -151,7 +151,7 @@ defmodule UselessMachineWeb.CoreComponents do
       <.flash
         id="client-error"
         kind={:error}
-        title="A client error occurred."
+        title="Client is disconnected."
         phx-disconnected={show(".phx-client-error #client-error")}
         phx-connected={hide("#client-error")}
         hidden
@@ -168,7 +168,7 @@ defmodule UselessMachineWeb.CoreComponents do
         phx-connected={hide("#server-error")}
         hidden
       >
-        (This Useless Machine is never coming back.)
+        Attempting to reconnect
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
       </.flash>
     </div>

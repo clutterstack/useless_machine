@@ -1,5 +1,6 @@
 defmodule UselessMachineWeb.AsciiArt do
   use Phoenix.Component
+  require Logger
 
   attr :file_path, :string, doc: "Path to the ASCII art file"
   attr :bg_class, :string, default: "bg-black"
@@ -8,10 +9,10 @@ defmodule UselessMachineWeb.AsciiArt do
     file_contents =
       if assigns.file_path != nil do
         assigns.file_path
-        |> dbg
+        # |> dbg
         |> File.read!()
       else
-        IO.puts("No assign `file_path`")
+        # Logger.debug("No assign `file_path`")
         ""
       end
 

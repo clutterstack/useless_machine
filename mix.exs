@@ -74,8 +74,8 @@ defmodule UselessMachine.MixProject do
       "assets.build": ["tailwind useless_machine", "esbuild useless_machine"],
       "assets.deploy": [
         "tailwind useless_machine --minify",
-        "esbuild useless_machine --minify",
-        "phx.digest"
+        "esbuild useless_machine --minify"
+        # "phx.digest"
       ]
     ]
   end

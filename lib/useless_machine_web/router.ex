@@ -4,6 +4,7 @@ defmodule UselessMachineWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
+    plug :fly_region_header_to_session
     plug :fetch_live_flash
     plug :put_root_layout, html: {UselessMachineWeb.Layouts, :root}
     plug :protect_from_forgery
@@ -16,8 +17,10 @@ defmodule UselessMachineWeb.Router do
 
   scope "/", UselessMachineWeb do
     pipe_through :browser
-    live "/", SequenceLive
-    # get "/", PageController, :home
+    get "/", PageController, :home
+    live "/:mach_id", SequenceLive
+    live "/nomachine", SequenceLive
+    get "/machine/:mach_id", PageController, :replay_to_machine
   end
 
   # Other scopes may use custom stacks.
@@ -40,4 +43,10 @@ defmodule UselessMachineWeb.Router do
       live_dashboard "/dashboard", metrics: UselessMachineWeb.Telemetry
     end
   end
+
+  def fly_region_header_to_session(conn, _opts) do
+    header = get_req_header(conn, "fly-region")
+    conn |> put_session(:fly_region, header)
+  end
+
 end

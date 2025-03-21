@@ -21,16 +21,16 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
-  database_path =
-    System.get_env("DATABASE_PATH") ||
-      raise """
-      environment variable DATABASE_PATH is missing.
-      For example: /etc/useless_machine/useless_machine.db
-      """
+  # database_path =
+  #   System.get_env("DATABASE_PATH") ||
+  #     raise """
+  #     environment variable DATABASE_PATH is missing.
+  #     For example: /etc/useless_machine/useless_machine.db
+  #     """
 
-  config :useless_machine, UselessMachine.Repo,
-    database: database_path,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5")
+  # config :useless_machine, UselessMachine.Repo,
+  #   database: database_path,
+  #   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5")
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
@@ -45,14 +45,19 @@ if config_env() == :prod do
       """
 
   host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  port = String.to_integer(System.get_env("PORT") || "4040")
+  self_by_ipv6 = "http://[#{System.get_env("FLY_PRIVATE_IP")}]:#{System.get_env("PORT")}"
 
   config :useless_machine, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :useless_machine, UselessMachineWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
-      # Add this line to allow localhost:8080 as a valid origin
-    check_origin: ["http://localhost:8080"],
+    # Add this line to allow localhost:4040 as a valid origin
+    check_origin: [
+      "https://useless-machine-quiet-cherry-9553.fly.dev",
+      "https://useless-machine.fly.dev",
+      self_by_ipv6
+      ],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
