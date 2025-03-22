@@ -20,9 +20,10 @@ defmodule UselessMachineWeb.PageController do
     else
       Logger.info("Wrong Machine. This Machine is #{this_machine}. Requested #{mach_id}.")
       Logger.info("Responding with fly-replay header")
+      render(conn, :home, machine: mach_id, this_machine: this_machine)
       conn
       |> put_resp_header("fly-replay", "instance=#{mach_id}")
-      |> send_resp(302, "")
+      |> send_resp(307, "")
     end
   end
 end
