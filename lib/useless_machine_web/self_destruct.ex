@@ -11,9 +11,19 @@ defmodule UselessMachine.SelfDestruct do
 
   ## Server
   def init(_) do
+    machine_id = System.get_env("FLY_MACHINE_ID")
+    node_name = Node.self()
+    connected_nodes = Node.list()
+
+    Logger.info("Starting self_destruct genserver on node #{node_name}. Connected nodes: #{inspect connected_nodes}")
+    Logger.info("About to broadcast to app:status; machine_id is #{machine_id}")
+
+    Phoenix.PubSub.broadcast(WhereMachines.PubSub, "app:status", {:app_started, machine_id})
+
+    Logger.info("Broadcast sent to app:status")
     # :timer.sleep(100) # Small buffer to ensure everything is ready
-    Logger.info("Starting self_destruct genserver. About to broadcast to app:status; :machine_id is #{Application.get_env(:useless_machine, :machine_id)}")
-    Phoenix.PubSub.broadcast(WhereMachines.PubSub, "app:status", {:app_started, Application.get_env(:useless_machine, :machine_id)})
+    # Logger.info("Starting self_destruct genserver. About to broadcast to app:status; :machine_id is #{Application.get_env(:useless_machine, :machine_id)}")
+    # Phoenix.PubSub.broadcast(WhereMachines.PubSub, "app:status", {:app_started, Application.get_env(:useless_machine, :machine_id)})
     Logger.info("Setting self-destruct timer for #{@shutoff_after} ms")
     schedule_shutoff()
     {:ok, %{}}
