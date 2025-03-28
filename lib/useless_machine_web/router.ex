@@ -17,7 +17,8 @@ defmodule UselessMachineWeb.Router do
 
   scope "/", UselessMachineWeb do
     pipe_through :browser
-    get "/machine/:mach_id", PageController, :replay_to_machine
+    # get "/machine/:mach_id", PageController, :replay_to_machine
+    get "/machine/:mach_id", PageController, :direct_to_machine
   end
 
   # Enable LiveDashboard in development
@@ -40,5 +41,10 @@ defmodule UselessMachineWeb.Router do
     header = get_req_header(conn, "fly-region")
     conn |> put_session(:fly_region, header)
   end
+
+  def get_mach_id do
+    System.get_env("FLY_MACHINE_ID")
+  end
+
 
 end

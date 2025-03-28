@@ -2,7 +2,7 @@ defmodule UselessMachine.SelfDestruct do
   use GenServer
   require Logger
 
-  @shutoff_after :timer.seconds(200)
+  @shutoff_after :timer.seconds(20000)
 
   ## Client
   def start_link(_opts) do
@@ -11,6 +11,9 @@ defmodule UselessMachine.SelfDestruct do
 
   ## Server
   def init(_) do
+    # :timer.sleep(100) # Small buffer to ensure everything is ready
+    Logger.info("Starting self_destruct genserver. About to broadcast to app:status; :machine_id is #{Application.get_env(:useless_machine, :machine_id)}")
+    Phoenix.PubSub.broadcast(WhereMachines.PubSub, "app:status", {:app_started, Application.get_env(:useless_machine, :machine_id)})
     Logger.info("Setting self-destruct timer for #{@shutoff_after} ms")
     schedule_shutoff()
     {:ok, %{}}

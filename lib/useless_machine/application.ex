@@ -4,6 +4,7 @@ defmodule UselessMachine.Application do
   @moduledoc false
 
   use Application
+  require Logger
 
   @impl true
   def start(_type, _args) do
@@ -13,8 +14,8 @@ defmodule UselessMachine.Application do
       # {Ecto.Migrator,
         # repos: Application.fetch_env!(:useless_machine, :ecto_repos),
         # skip: skip_migrations?()},
-      # {DNSCluster, query: Application.get_env(:useless_machine, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: UselessMachine.PubSub},
+      {DNSCluster, query: Application.get_env(:useless_machine, :dns_cluster_query) || :ignore},
+      {Phoenix.PubSub, name: WhereMachines.PubSub},
       {Task.Supervisor, name: UselessMachine.TaskSupervisor},
       # Start a worker by calling: UselessMachine.Worker.start_link(arg)
       # {UselessMachine.Worker, arg},

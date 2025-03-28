@@ -91,7 +91,7 @@ defmodule UselessMachineWeb.SequenceLive do
     true ->
       Logger.debug("No more files. Shutting down.")
       Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-      Process.send_after(self(), :shutdown_app, 10)
+      # Process.send_after(self(), :shutdown_app, 10)
       {:noreply, socket}
     end
   end

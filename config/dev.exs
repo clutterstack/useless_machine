@@ -16,7 +16,7 @@ config :useless_machine, UselessMachine.Repo,
 # Binding to loopback ipv4 address prevents access from other machines.
 config :useless_machine, UselessMachineWeb.Endpoint,
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: {127, 0, 0, 1}, port: 4040],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

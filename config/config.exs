@@ -19,7 +19,7 @@ config :useless_machine, UselessMachineWeb.Endpoint,
     formats: [html: UselessMachineWeb.ErrorHTML, json: UselessMachineWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: UselessMachine.PubSub,
+  pubsub_server: WhereMachines.PubSub,
   live_view: [signing_salt: "4t7uCxHj"]
 
 # Configure esbuild (the version is required)

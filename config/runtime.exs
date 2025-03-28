@@ -48,7 +48,9 @@ if config_env() == :prod do
   port = String.to_integer(System.get_env("PORT") || "4040")
   self_by_ipv6 = "http://[#{System.get_env("FLY_PRIVATE_IP")}]:#{System.get_env("PORT")}"
 
-  config :useless_machine, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  config :useless_machine,
+    dns_cluster_query: System.get_env("DNS_CLUSTER_QUERY"),
+    machine_id: System.get_env("FLY_MACHINE_ID")
 
   config :useless_machine, UselessMachineWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
