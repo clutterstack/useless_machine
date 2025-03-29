@@ -1,5 +1,9 @@
 import Config
 
+# Development environment API URL
+config :useless_machine,
+  where_machines_url: "http://localhost:4000/api/machine_status"
+
 # Configure your database
 config :useless_machine, UselessMachine.Repo,
   database: Path.expand("../useless_machine.db", __DIR__),

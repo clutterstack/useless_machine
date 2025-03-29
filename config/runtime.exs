@@ -44,13 +44,19 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
+  where_machines_url =
+    System.get_env("WHERE_MACHINES_URL") || "http://where.internal:8080/api/machine_status"
+
+  config :useless_machine,
+    dns_cluster_query: System.get_env("DNS_CLUSTER_QUERY"),
+    machine_id: System.get_env("FLY_MACHINE_ID"),
+     # Production API URL, can be overridden by environment variable
+    where_machines_url: where_machines_url
+
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4040")
   self_by_ipv6 = "http://[#{System.get_env("FLY_PRIVATE_IP")}]:#{System.get_env("PORT")}"
 
-  config :useless_machine,
-    dns_cluster_query: System.get_env("DNS_CLUSTER_QUERY"),
-    machine_id: System.get_env("FLY_MACHINE_ID")
 
   config :useless_machine, UselessMachineWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

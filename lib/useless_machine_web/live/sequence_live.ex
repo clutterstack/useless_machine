@@ -101,6 +101,10 @@ defmodule UselessMachineWeb.SequenceLive do
   def handle_info(:shutdown_app, socket) do
     # Log shutdown message
     Logger.info("Sequence complete, shutting down application")
+    # Tell where_machines app Machine is stopping.
+    UselessMachine.StatusClient.send_status("stopping")
+     # Give some time for the HTTP request to complete before shutting down
+     :timer.sleep(2000)
     # Stop system
     Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
       System.stop(0)

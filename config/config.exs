@@ -9,7 +9,9 @@ import Config
 
 config :useless_machine,
   ecto_repos: [UselessMachine.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  http_timeout: 5000,          # 5 second timeout for the entire request
+  http_connect_timeout: 3000   # 3 second timeout for establishing connection
 
 # Configures the endpoint
 config :useless_machine, UselessMachineWeb.Endpoint,

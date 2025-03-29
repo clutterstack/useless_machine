@@ -2,7 +2,7 @@ defmodule UselessMachine.SelfDestruct do
   use GenServer
   require Logger
 
-  @shutoff_after :timer.seconds(20000)
+  @shutoff_after :timer.seconds(2000)
 
   ## Client
   def start_link(_opts) do
@@ -16,30 +16,34 @@ defmodule UselessMachine.SelfDestruct do
     connected_nodes = Node.list()
 
     Logger.info("Starting self_destruct genserver on node #{node_name}. Connected nodes: #{inspect connected_nodes}")
-    Logger.info("About to broadcast to app:status; machine_id is #{machine_id}")
+    Logger.info("Machine ID is #{machine_id}")
 
-    Phoenix.PubSub.broadcast(WhereMachines.PubSub, "app:status", {:app_started, machine_id})
+    # Send "started" status to where_machines via HTTP
+    UselessMachine.StatusClient.send_status("started")
 
-    Logger.info("Broadcast sent to app:status")
-    # :timer.sleep(100) # Small buffer to ensure everything is ready
-    # Logger.info("Starting self_destruct genserver. About to broadcast to app:status; :machine_id is #{Application.get_env(:useless_machine, :machine_id)}")
-    # Phoenix.PubSub.broadcast(WhereMachines.PubSub, "app:status", {:app_started, Application.get_env(:useless_machine, :machine_id)})
     Logger.info("Setting self-destruct timer for #{@shutoff_after} ms")
     schedule_shutoff()
     {:ok, %{}}
   end
 
-  # Use Task.Supervisor for a controlled shutdown, though in this case
-  # simply issuing System.stop(0) seems just as appropriate
+  # Use Task.Supervisor for a controlled shutdown
   def handle_info(:shutoff, _state) do
-    Logger.debug("reached TTL; shutting down")
+    Logger.debug("Reached TTL; sending stopping status and shutting down")
+
+    # Send "stopping" status to where_machines
+    UselessMachine.StatusClient.send_status("stopping")
+
+    # Give some time for the HTTP request to complete before shutting down
+    :timer.sleep(2000)
+
     Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
       System.stop(0)
     end)
+
+    {:noreply, %{}}
   end
 
   defp schedule_shutoff do
     Process.send_after(self(), :shutoff, @shutoff_after)
   end
-
 end

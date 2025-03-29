@@ -1,5 +1,12 @@
 import Config
 
+# Test environment API URL
+config :useless_machine,
+  where_machines_url: "http://localhost:4000/api/machine_status",
+  # Use shorter timeouts for faster test failures
+  http_timeout: 1000,
+  http_connect_timeout: 500
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
