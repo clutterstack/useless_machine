@@ -5,7 +5,7 @@ defmodule UselessMachineWeb.SequenceLive do
 
   # Define module attributes
   @initial_dwell 2000 # milliseconds before animation starts
-  @display_time 2000 # milliseconds between messages
+  @display_time 500 # milliseconds between messages
   @ascii_dir "ascii"
 
   def mount(_params, %{"fly_region" => fly_region}, socket) do
@@ -91,12 +91,10 @@ defmodule UselessMachineWeb.SequenceLive do
     true ->
       Logger.debug("No more files. Shutting down.")
       Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-      # Process.send_after(self(), :shutdown_app, 10)
+      Process.send_after(self(), :shutdown_app, 10)
       {:noreply, socket}
     end
   end
-
-  # assign(socket, really_done: true)
 
   def handle_info(:shutdown_app, socket) do
     # Log shutdown message
@@ -112,31 +110,6 @@ defmodule UselessMachineWeb.SequenceLive do
 
     {:noreply, socket}
   end
-
-  # Helpers
-  # def get_ascii_files(dir) do
-  #   IO.inspect(dir, label: "dir passed to get_ascii_files")
-  #   File.ls(dir) |> dbg
-  #   with {:ok, files} <- File.ls(dir) do
-  #     files
-  #     |> Enum.sort
-  #     |> Enum.map(fn file -> Path.join([dir, file]) end)
-  #   end
-  # end
-
-  # def get_static_files(dir) do
-  #   priv_dir = :code.priv_dir(:useless_machine)
-  #   full_path = Path.join([priv_dir, "static", dir])
-  #   |> dbg
-  #   File.ls(full_path) |> dbg
-  #   case File.ls(full_path) do
-  #     {:ok, files} ->
-  #       files
-  #       |> Enum.sort
-  #       |> Enum.map(fn file -> Path.join([dir, file]) end)
-  #     {:error, reason} -> {:error, reason}
-  #   end
-  # end
 
   @doc """
   Returns the number of files in the static/ascii directory based on the manifest.

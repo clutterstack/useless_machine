@@ -10,23 +10,27 @@ defmodule UselessMachine.StatusClient do
   - "started" - Machine has started up
   - "stopping" - Machine is shutting down
   """
+  # TODO? send only to the Machine that asked for this Machine to be created, with the
+  # fly-force-instance-id header
+  # https://fly.io/docs/networking/dynamic-request-routing/#the-fly-force-instance-id-header
+  # Not too worried about this, but consider: what happens if the user gets reconnected on a different
+  # instance somehow? Is that likely? Is the experience weirded out anyway, if that happens? Prolly.
   def send_status(status) when status in ["started", "stopping"] do
     machine_id = System.get_env("FLY_MACHINE_ID") || "unknown"
     region = System.get_env("FLY_REGION") || "unknown"
-
-    payload = %{
-      machine_id: machine_id,
-      region: region,
-      status: status,
-      timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
-    }
+    payload =
+        %{
+          machine_id: machine_id,
+          region: region,
+          status: status,
+          timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
+        }
 
     # Use a Task to avoid blocking
     Task.start(fn -> do_send_status(payload) end)
   end
 
   defp do_send_status(payload) do
-
     url = Application.get_env(:useless_machine, :where_machines_url)
     options = [
       {:timeout, Application.get_env(:useless_machine, :http_timeout, 5000)},
@@ -34,20 +38,22 @@ defmodule UselessMachine.StatusClient do
     ]
     Logger.info("Sending status update to where_machines at #{inspect url}: #{inspect(payload)}")
 
-
-    try do
-      Req.post!(
+    #{:ok, Req.Response.t()} | {:error, Exception.t()}
+    case Req.post(
         url,
         json: payload,
-        connect_options: [timeout: options[:connect_timeout]],
+        connect_options: [
+          timeout: options[:connect_timeout],
+          transport_opts: [inet6: true]
+          ],
         receive_timeout: options[:timeout]
-      ) |> dbg
-      Logger.info("Status update sent successfully")
-      :ok
-    rescue
-      e ->
-        Logger.error("Exception when sending status update: #{inspect(e)}")
-        {:error, :exception}
+    ) do
+      {:ok, %Req.Response{}} ->
+        Logger.info("Status update sent successfully")
+        :ok
+      {:error, exception} ->
+        Logger.error("Error from Req on status update: #{inspect(exception)}")
+        {:error, exception}
     end
   end
 end

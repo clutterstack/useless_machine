@@ -2,7 +2,7 @@ defmodule UselessMachine.SelfDestruct do
   use GenServer
   require Logger
 
-  @shutoff_after :timer.seconds(2000)
+  @shutoff_after :timer.seconds(60)
 
   ## Client
   def start_link(_opts) do
@@ -12,11 +12,8 @@ defmodule UselessMachine.SelfDestruct do
   ## Server
   def init(_) do
     machine_id = System.get_env("FLY_MACHINE_ID")
-    node_name = Node.self()
-    connected_nodes = Node.list()
 
-    Logger.info("Starting self_destruct genserver on node #{node_name}. Connected nodes: #{inspect connected_nodes}")
-    Logger.info("Machine ID is #{machine_id}")
+    Logger.info("Starting self_destruct genserver on Machine #{machine_id}")
 
     # Send "started" status to where_machines via HTTP
     UselessMachine.StatusClient.send_status("started")
@@ -34,7 +31,7 @@ defmodule UselessMachine.SelfDestruct do
     UselessMachine.StatusClient.send_status("stopping")
 
     # Give some time for the HTTP request to complete before shutting down
-    :timer.sleep(2000)
+    :timer.sleep(400)
 
     Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
       System.stop(0)
