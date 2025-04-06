@@ -7,18 +7,18 @@ defmodule UselessMachine.StatusClient do
   @doc """
   Send a status update to the where_machines application.
   Status should be one of:
-  - "started" - Machine has started up
+  - "listening" - App is running; should be able to visit it.
   - "stopping" - Machine is shutting down
   """
   # TODO? If not successful, send to top1.of.where.internal
   # https://fly.io/docs/networking/dynamic-request-routing/#the-fly-force-instance-id-header
   # Not too worried about this, but consider: what happens if the user gets reconnected on a different
   # instance somehow? Is that likely? Is the experience weirded out anyway, if that happens? Prolly.
-  def send_status(status) when status in ["started", "stopping"] do
+  def send_status(status) when status in ["listening", "stopping"] do
     machine_id = System.get_env("FLY_MACHINE_ID") || "unknown"
     region = System.get_env("FLY_REGION") || "unknown"
     payload =
-      if status == "started" do
+      if status == "listening" do
         %{
           machine_id: machine_id,
           region: region,
