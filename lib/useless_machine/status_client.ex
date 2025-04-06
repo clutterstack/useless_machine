@@ -10,8 +10,7 @@ defmodule UselessMachine.StatusClient do
   - "started" - Machine has started up
   - "stopping" - Machine is shutting down
   """
-  # TODO? send only to the Machine that asked for this Machine to be created, with the
-  # fly-force-instance-id header
+  # TODO? If not successful, send to top1.of.where.internal
   # https://fly.io/docs/networking/dynamic-request-routing/#the-fly-force-instance-id-header
   # Not too worried about this, but consider: what happens if the user gets reconnected on a different
   # instance somehow? Is that likely? Is the experience weirded out anyway, if that happens? Prolly.
@@ -19,12 +18,18 @@ defmodule UselessMachine.StatusClient do
     machine_id = System.get_env("FLY_MACHINE_ID") || "unknown"
     region = System.get_env("FLY_REGION") || "unknown"
     payload =
+      if status == "started" do
         %{
           machine_id: machine_id,
           region: region,
           status: status,
           timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
         }
+      else
+        %{
+          machine_id: machine_id
+        }
+      end
 
     # Use a Task to avoid blocking
     Task.start(fn -> do_send_status(payload) end)

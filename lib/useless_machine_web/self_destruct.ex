@@ -16,7 +16,7 @@ defmodule UselessMachine.SelfDestruct do
     Logger.info("Starting self_destruct genserver on Machine #{machine_id}")
 
     # Send "started" status to where_machines via HTTP
-    UselessMachine.StatusClient.send_status("started")
+    UselessMachine.StatusClient.send_status("listening")
 
     Logger.info("Setting self-destruct timer for #{@shutoff_after} ms")
     schedule_shutoff()

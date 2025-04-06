@@ -17,8 +17,8 @@ defmodule UselessMachineWeb.Router do
 
   scope "/", UselessMachineWeb do
     pipe_through :browser
-    # get "/machine/:mach_id", PageController, :replay_to_machine
-    get "/machine/:mach_id", PageController, :direct_to_machine
+    get "/machine/:mach_id", PageController, :replay_to_machine
+    # get "/machine/:mach_id", PageController, :direct_to_machine
   end
 
   # Enable LiveDashboard in development

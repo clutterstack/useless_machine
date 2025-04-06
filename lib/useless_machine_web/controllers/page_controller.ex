@@ -39,7 +39,7 @@ defmodule UselessMachineWeb.PageController do
       # render(conn, :home, machine: mach_id, this_machine: this_machine)
       conn
       |> put_resp_header("fly-replay", "instance=#{mach_id}")
-      |> send_resp(307, "")
+      |> send_resp(301, "")
     end
   end
 end
