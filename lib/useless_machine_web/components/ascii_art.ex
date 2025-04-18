@@ -7,7 +7,7 @@ defmodule UselessMachineWeb.AsciiArt do
 
   def ascii_art(assigns) do
     file_contents =
-      if assigns.file_path != nil do
+      if is_binary(assigns.file_path) do
         assigns.file_path
         # |> dbg
         |> File.read!()
@@ -19,7 +19,7 @@ defmodule UselessMachineWeb.AsciiArt do
     assigns = assign(assigns, :content, file_contents)
 
     ~H"""
-    <pre class={"ascii-art #{@bg_class}"}><code><%= @content %></code></pre>
+    <pre class="ascii-art"><code><%= @content %></code></pre>
     """
   end
 end

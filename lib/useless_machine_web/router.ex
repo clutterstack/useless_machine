@@ -11,6 +11,10 @@ defmodule UselessMachineWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :localhost_only do
+    plug UselessMachineWeb.Plugs.LocalhostOnly
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -19,6 +23,12 @@ defmodule UselessMachineWeb.Router do
     pipe_through :browser
     get "/machine/:mach_id", PageController, :replay_to_machine
     # get "/machine/:mach_id", PageController, :direct_to_machine
+  end
+
+  # Localhost-only route for health check ()
+  scope "/health", UselessMachineWeb do
+    pipe_through [:api, :localhost_only]
+    get "/", HealthCheckController, :check
   end
 
   # Enable LiveDashboard in development

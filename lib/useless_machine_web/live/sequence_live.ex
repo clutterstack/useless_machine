@@ -4,9 +4,13 @@ defmodule UselessMachineWeb.SequenceLive do
   require Logger
 
   # Define module attributes
-  @initial_dwell 2000 # milliseconds before animation starts
-  @display_time 500 # milliseconds between messages
+  @initial_dwell 1400 # milliseconds before animation starts
+  @display_time 100 # milliseconds between messages, usually
+  @hang_fire 650 # pause before pushing button
+  @button_press 100 # pushing button
   @ascii_dir "ascii"
+  @button_frame 6 # the frame at which the button is depressed, turning off the lights
+  @container_classes "container my-8 mx-auto p-8 max-w-xl rounded-xl p-4 border-2 border-neutral-600 font-mono"
 
   def mount(_params, %{"fly_region" => fly_region}, socket) do
     # Start the sequence on mount
@@ -23,40 +27,40 @@ defmodule UselessMachineWeb.SequenceLive do
       sequence_complete: false,
       files: get_static_files(@ascii_dir),
       num_files: length(get_static_files(@ascii_dir)),
-      really_done: false
+      light_on: true,
+      container_classes: @container_classes,
+      frame_delay: @initial_dwell
     )}
   end
 
+  # amber: text-[#ffb700]
   def render(assigns) do
-    if (assigns.sequence_complete == false) do
+    if (assigns.light_on) do
       ~H"""
-      <div class="container mx-auto p-8 max-w-lg h-lvh bg-[#240000]">
-        <h1 class="text-2xl font-bold mb-4 text-gray-200">You started a Fly Machine in <%= @fly_region %></h1>
-        <div class="text-gray-200">This is Machine {get_mach_id()}</div>
-        <div class="flex items-center justify-center">
-          <AsciiArt.ascii_art file_path={@current_file} bg_class="bg-[#240000]"/>
-          <div class="h-full bg-black"> </div>
-        </div>
-
-        <div class="mt-4 text-sm text-gray-200">
-          <p>Displaying message <%= @text_index %> of <%= @num_files %></p>
+      <div class={[@container_classes, "bg-[#240000] text-red-600"]}>
+        <h1 class="text-2xl font-bold mb-4 ">You started a Useless Machine</h1>
+        <div>This is Fly Machine {get_mach_id()} in <%= @fly_region %></div>
+        <div class="flex flex-col items-center justify-center">
+          <AsciiArt.ascii_art file_path={@current_file} />
         </div>
       </div>
       """
     else
       ~H"""
-      <div class="container-full mx-0 w-100 h-lvh bg-black">
-        <div class="container mx-auto p-8 max-w-lg">
-          <h1 class="text-2xl font-bold mb-4">Bye</h1>
-          <div class="flex items-center justify-center">
-            <AsciiArt.ascii_art file_path={@current_file} />
-          </div>
+      <div class={[@container_classes, "text-slate-500"]}>
+        <h1 class="text-2xl font-bold mb-4">Machine self-destructing</h1>
+        <div class={@sequence_complete && "text-green-200"}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
+        <div class="flex flex-col items-center justify-center">
+          <AsciiArt.ascii_art file_path={@current_file} />
         </div>
       </div>
-
       """
     end
   end
+
+  # <div class="mt-4 text-sm text-gray-200">
+  # <p>Displaying message <%= @text_index %> of <%= @num_files %></p>
+# </div>
 
   def handle_info(:start_sequence, socket) do
     # Display the first text and schedule the next one
@@ -72,26 +76,61 @@ defmodule UselessMachineWeb.SequenceLive do
     num_files = socket.assigns.num_files
 
     cond do
-    text_index < (num_files - 1) ->
+      text_index < (@button_frame - 1) ->
+        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
       # Display the next text and schedule the following one
-      Process.send_after(self(), :next_text, @display_time)
-      {:noreply, assign(socket,
-        current_file: Enum.at(files, text_index),
-        text_index: text_index + 1
-      )}
-    text_index == (num_files - 1) ->
-      # All texts displayed, prepare for shutdown
-      Logger.debug("All texts displayed, prepare for shutdown")
-      Process.send_after(self(), :next_text, 10)
-      {:noreply, assign(socket,
-        current_file: Enum.at(files, text_index),
-        text_index: text_index + 1,
-        sequence_complete: true
+        Process.send_after(self(), :next_text, @display_time)
+        {:noreply, assign(socket,
+          current_file: Enum.at(files, text_index),
+          text_index: text_index + 1
+        )}
+      text_index == (@button_frame - 1) ->
+        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
+      # Display the next text and schedule the following one
+        Process.send_after(self(), :next_text, @hang_fire)
+        {:noreply, assign(socket,
+          current_file: Enum.at(files, text_index),
+          text_index: text_index + 1
+        )}
+      text_index == @button_frame ->
+        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
+        # Display the next text and schedule the following one
+        Process.send_after(self(), :next_text, @button_press)
+        {:noreply, assign(socket,
+          current_file: Enum.at(files, text_index),
+          text_index: text_index + 1
+        )}
+      text_index == @button_frame + 1 ->
+        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
+        # Display the next text and schedule the following one
+        Process.send_after(self(), :next_text, @button_press)
+        {:noreply, assign(socket,
+          current_file: Enum.at(files, text_index),
+          text_index: text_index + 1,
+          light_on: false
+        )}
+        text_index < (num_files - 1) ->
+          Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
+          # Display the next text and schedule the following one
+          Process.send_after(self(), :next_text, @display_time)
+          {:noreply, assign(socket,
+            current_file: Enum.at(files, text_index),
+            text_index: text_index + 1
+          )}
+      text_index == (num_files - 1) ->
+        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
+        # All texts displayed, prepare for shutdown
+        Logger.debug("All non-blank texts displayed, prepare for shutdown")
+        Process.send_after(self(), :next_text, 10)
+        {:noreply, assign(socket,
+          current_file: Enum.at(files, text_index),
+          text_index: text_index + 1,
+          sequence_complete: true
         )}
     true ->
       Logger.debug("No more files. Shutting down.")
       Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-      Process.send_after(self(), :shutdown_app, 10)
+      # Process.send_after(self(), :shutdown_app, 10)
       {:noreply, socket}
     end
   end

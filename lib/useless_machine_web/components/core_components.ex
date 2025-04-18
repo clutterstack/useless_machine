@@ -163,13 +163,11 @@ defmodule UselessMachineWeb.CoreComponents do
       <.flash
         id="server-error"
         kind={:error}
-        title="A server error occurred."
+        title="This Useless Machine is no more."
         phx-disconnected={show(".phx-server-error #server-error")}
         phx-connected={hide("#server-error")}
         hidden
-      >
-        Attempting to reconnect
-        <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
+      >Back to <a class="font-bold" href="https://where.fly.dev">where.fly.dev</a>
       </.flash>
     </div>
     """

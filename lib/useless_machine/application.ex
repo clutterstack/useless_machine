@@ -21,7 +21,7 @@ defmodule UselessMachine.Application do
       # {UselessMachine.Worker, arg},
       # Start to serve requests, typically the last entry
       UselessMachineWeb.Endpoint,
-      UselessMachine.SelfDestruct
+      {UselessMachine.LifeCycle, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
