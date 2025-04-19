@@ -1,6 +1,7 @@
-@import "tailwindcss/base";
+/* @import "tailwindcss/base";
 @import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import "tailwindcss/utilities"; */
+@import "tailwindcss";
 
 /* This file is for your main application CSS */
 
@@ -8,8 +9,11 @@
   max-width: 100%;
 } */
 
+/* Make LiveView wrapper divs transparent for layout */
+[data-phx-session] { display: contents; }
+
 h1 {
-    @apply text-3xl md:text-4xl font-semibold mb-6;
+    @apply text-3xl md:text-xl font-semibold mb-6;
 }
 
 h2 {
