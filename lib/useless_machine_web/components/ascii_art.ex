@@ -3,7 +3,7 @@ defmodule UselessMachineWeb.AsciiArt do
   require Logger
 
   attr :file_path, :string, doc: "Path to the ASCII art file"
-  attr :bg_class, :string, default: "bg-black"
+  attr :class, :string, default: "text-[8px] md:text-[10px] leading-[1.2]", doc: "Supplementary classes for the pre element"
 
   def ascii_art(assigns) do
     file_contents =
@@ -19,7 +19,7 @@ defmodule UselessMachineWeb.AsciiArt do
     assigns = assign(assigns, :content, file_contents)
 
     ~H"""
-    <pre class="ascii-art"><code><%= @content %></code></pre>
+    <pre class={[@class, "ascii-art"]}><code><%= @content %></code></pre>
     """
   end
 end

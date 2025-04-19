@@ -8,17 +8,6 @@
   max-width: 100%;
 } */
 
-pre.ascii-art {
-  font-size: 10px;
-  line-height: 1.2em;
-  /* height: 30lh; */
-  /* background-color: black; */
-  /* color: rgb(215, 215, 215); */
-  /* margin: auto; */
-  /* white-space: pre; */
-  /* @apply text-[10px]leading-none; */
-}
-
 h1 {
     @apply text-3xl md:text-4xl font-semibold mb-6;
 }

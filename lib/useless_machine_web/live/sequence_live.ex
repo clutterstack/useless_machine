@@ -10,7 +10,8 @@ defmodule UselessMachineWeb.SequenceLive do
   @button_press 100 # pushing button
   @ascii_dir "ascii"
   @button_frame 6 # the frame at which the button is depressed, turning off the lights
-  @container_classes "container my-8 mx-auto p-8 max-w-xl rounded-xl p-4 border-2 border-neutral-600 font-mono"
+  @container_classes "container my-8 mx-auto px-0 w-fit rounded-xl p-4 border-2 border-neutral-600 font-mono"
+  @txt_classes "text-[8px] md:text-[10px] leading-[1.2]"
 
   def mount(_params, %{"fly_region" => fly_region}, socket) do
     # Start the sequence on mount
@@ -29,6 +30,7 @@ defmodule UselessMachineWeb.SequenceLive do
       num_files: length(get_static_files(@ascii_dir)),
       light_on: true,
       container_classes: @container_classes,
+      txt_classes: @txt_classes,
       frame_delay: @initial_dwell
     )}
   end
@@ -38,20 +40,24 @@ defmodule UselessMachineWeb.SequenceLive do
     if (assigns.light_on) do
       ~H"""
       <div class={[@container_classes, "bg-[#240000] text-red-600"]}>
-        <h1 class="text-2xl font-bold mb-4 ">You started a Useless Machine</h1>
-        <div>This is Fly Machine {get_mach_id()} in <%= @fly_region %></div>
+        <div class="absolute top left pl-4">
+          <h1 class="text-2xl font-bold mb-4">You started a Useless Machine</h1>
+          <div>This is Fly Machine {get_mach_id()} in <%= @fly_region %></div>
+        </div>
         <div class="flex flex-col items-center justify-center">
-          <AsciiArt.ascii_art file_path={@current_file} />
+          <AsciiArt.ascii_art file_path={@current_file} class={@txt_classes}/>
         </div>
       </div>
       """
     else
       ~H"""
       <div class={[@container_classes, "text-slate-500"]}>
-        <h1 class="text-2xl font-bold mb-4">Machine self-destructing</h1>
-        <div class={@sequence_complete && "text-green-200"}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
+        <div class="absolute top left pl-4">
+          <h1 class="text-2xl font-bold mb-4">Machine self-destructing</h1>
+          <div class={@sequence_complete && "text-green-200"}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
+        </div>
         <div class="flex flex-col items-center justify-center">
-          <AsciiArt.ascii_art file_path={@current_file} />
+          <AsciiArt.ascii_art file_path={@current_file} class={@txt_classes}/>
         </div>
       </div>
       """
@@ -77,7 +83,6 @@ defmodule UselessMachineWeb.SequenceLive do
 
     cond do
       text_index < (@button_frame - 1) ->
-        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
       # Display the next text and schedule the following one
         Process.send_after(self(), :next_text, @display_time)
         {:noreply, assign(socket,
@@ -85,7 +90,6 @@ defmodule UselessMachineWeb.SequenceLive do
           text_index: text_index + 1
         )}
       text_index == (@button_frame - 1) ->
-        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
       # Display the next text and schedule the following one
         Process.send_after(self(), :next_text, @hang_fire)
         {:noreply, assign(socket,
@@ -93,7 +97,6 @@ defmodule UselessMachineWeb.SequenceLive do
           text_index: text_index + 1
         )}
       text_index == @button_frame ->
-        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
         # Display the next text and schedule the following one
         Process.send_after(self(), :next_text, @button_press)
         {:noreply, assign(socket,
@@ -101,7 +104,6 @@ defmodule UselessMachineWeb.SequenceLive do
           text_index: text_index + 1
         )}
       text_index == @button_frame + 1 ->
-        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
         # Display the next text and schedule the following one
         Process.send_after(self(), :next_text, @button_press)
         {:noreply, assign(socket,
@@ -110,7 +112,6 @@ defmodule UselessMachineWeb.SequenceLive do
           light_on: false
         )}
         text_index < (num_files - 1) ->
-          Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
           # Display the next text and schedule the following one
           Process.send_after(self(), :next_text, @display_time)
           {:noreply, assign(socket,
@@ -118,7 +119,6 @@ defmodule UselessMachineWeb.SequenceLive do
             text_index: text_index + 1
           )}
       text_index == (num_files - 1) ->
-        Logger.debug("Displaying frame for index #{text_index}. @light_on? #{inspect socket.assigns.light_on}")
         # All texts displayed, prepare for shutdown
         Logger.debug("All non-blank texts displayed, prepare for shutdown")
         Process.send_after(self(), :next_text, 10)
