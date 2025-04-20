@@ -16,17 +16,20 @@ defmodule UselessMachineWeb.SequenceLive do
   def mount(_params, %{"fly_region" => fly_region}, socket) do
     # Start the sequence on mount
     if connected?(socket) do
-      Logger.info("fly_region: #{inspect fly_region}")
+      # Logger.info("fly_region: #{inspect fly_region}")
       send(self(), :start_sequence)
     end
 
+    txt_files = get_static_files(@ascii_dir)
+    first_file = Enum.at(txt_files, 0)
+
     {:ok, assign(socket,
       fly_region: fly_region,
-      current_file: nil,
-      text_index: 0,
+      current_file: first_file,
+      text_index: 1,
       file_path: nil,
       sequence_complete: false,
-      files: get_static_files(@ascii_dir),
+      files: txt_files,
       num_files: length(get_static_files(@ascii_dir)),
       light_on: true,
       container_classes: @container_classes,
@@ -72,7 +75,7 @@ defmodule UselessMachineWeb.SequenceLive do
     # Display the first text and schedule the next one
     Logger.debug("Starting sequence with initial_dwell #{@initial_dwell}")
     Process.send_after(self(), :next_text, @initial_dwell)
-    {:noreply, assign(socket, current_file: Enum.at(socket.assigns.files, 0), text_index: 1)}
+    {:noreply, socket}
   end
   # current_file: Enum.at(socket.assigns.files, 0),
 
