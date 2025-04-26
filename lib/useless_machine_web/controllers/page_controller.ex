@@ -29,7 +29,7 @@ defmodule UselessMachineWeb.PageController do
 
   def replay_to_machine(conn, %{"mach_id" => mach_id}) do
     this_machine = System.get_env("FLY_MACHINE_ID")
-    Logger.info("this_machine: #{mach_id}")
+    Logger.info("requested_machine: #{mach_id}")
     if mach_id == this_machine do
       Logger.info("Already on the right Machine")
       live_render(conn, UselessMachineWeb.SequenceLive)

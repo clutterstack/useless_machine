@@ -3,7 +3,7 @@ defmodule UselessMachineWeb.AsciiArt do
   require Logger
 
   attr :file_path, :string, doc: "Path to the ASCII art file"
-  attr :class, :string, default: "text-[8px] md:text-[10px] leading-[1.2]", doc: "Supplementary classes for the pre element"
+  attr :class, :string, default: "text-[8px]", doc: "Supplementary classes for the pre element"
 
   def ascii_art(assigns) do
     file_contents =

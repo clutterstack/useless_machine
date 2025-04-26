@@ -156,8 +156,9 @@ defmodule UselessMachineWeb.CoreComponents do
         phx-connected={hide("#client-error")}
         hidden
       >
-        Attempting to reconnect
+        If the Useless Machine has shut down, we'll be waiting forever.
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
+        Back to <a class="font-bold" href="https://where.fly.dev">where.fly.dev</a>
       </.flash>
 
       <.flash

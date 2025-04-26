@@ -4,22 +4,25 @@ defmodule UselessMachineWeb.SequenceLive do
   require Logger
 
   # Define module attributes
-  @initial_dwell 1400 # milliseconds before animation starts
-  @display_time 100 # milliseconds between messages, usually
+  @initial_dwell 2500 # milliseconds before animation starts
+  @display_time 120 # milliseconds between messages, usually
   @hang_fire 650 # pause before pushing button
-  @button_press 100 # pushing button
+  @button_press 120 # pushing button
   @ascii_dir "ascii"
   @button_frame 6 # the frame at which the button is depressed, turning off the lights
-  @container_classes "container my-8 mx-auto px-0 w-fit rounded-xl p-4 border-2 border-neutral-600 font-mono"
-  @txt_classes "text-[8px] md:text-[10px] leading-[1.2]"
+  @container_classes "container relative my-8 mx-auto px-0 w-fit rounded-xl p-4 pb-0 box-border border-2 border-neutral-600 font-mono"
+  @message_classes "absolute top left px-4 "
+  @txt_classes "text-[7px] sm:text-[10px] font-black"
 
-  def mount(_params, %{"fly_region" => fly_region}, socket) do
+  # %{"fly_region" => fly_region}
+  def mount(params, _session, socket) do
+    Logger.info("what's in the params? #{inspect params}")
     # Start the sequence on mount
     if connected?(socket) do
       # Logger.info("fly_region: #{inspect fly_region}")
       send(self(), :start_sequence)
     end
-
+    fly_region = System.get_env("FLY_REGION") || "unknown"
     txt_files = get_static_files(@ascii_dir)
     first_file = Enum.at(txt_files, 0)
 
@@ -33,6 +36,7 @@ defmodule UselessMachineWeb.SequenceLive do
       num_files: length(get_static_files(@ascii_dir)),
       light_on: true,
       container_classes: @container_classes,
+      message_classes: @message_classes,
       txt_classes: @txt_classes,
       frame_delay: @initial_dwell
     )}
@@ -42,24 +46,24 @@ defmodule UselessMachineWeb.SequenceLive do
   def render(assigns) do
     if (assigns.light_on) do
       ~H"""
-      <div class={[@container_classes, "bg-[#240000] text-red-600"]}>
-        <div class="absolute top left pl-4">
-          <h1 class="text-2xl font-bold mb-4">You started a Useless Machine</h1>
+      <div class={[@container_classes, "bg-[#240000] text-red-500"]}>
+        <div class={@message_classes}>
+          <h1 class="text-xl sm:text-2xl font-bold mb-1 text-[#ffb700] h-[2lh] sm:h-auto mr-4">You started a Useless Machine</h1>
           <div>This is Fly Machine {get_mach_id()} in <%= @fly_region %></div>
         </div>
-        <div class="flex flex-col items-center justify-center">
+        <div class="flex flex-col mt-16 sm:mt-12 items-center justify-center">
           <AsciiArt.ascii_art file_path={@current_file} class={@txt_classes}/>
         </div>
       </div>
       """
     else
       ~H"""
-      <div class={[@container_classes, "text-slate-500"]}>
-        <div class="absolute top left pl-4">
-          <h1 class="text-2xl font-bold mb-4">Machine self-destructing</h1>
-          <div class={@sequence_complete && "text-green-200"}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
+      <div class={[@container_classes, "text-slate-400"]}>
+        <div class={@message_classes}>
+          <h1 class="text-xl sm:text-2xl font-bold mb-1 h-[2lh] sm:h-auto">{@sequence_complete && "Bye" || "VM self-destructing"}</h1>
+          <div class={[@sequence_complete && "text-green-200", "self-end"]}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
         </div>
-        <div class="flex flex-col items-center justify-center">
+        <div class="flex flex-col mt-16 sm:mt-12 items-center justify-center">
           <AsciiArt.ascii_art file_path={@current_file} class={@txt_classes}/>
         </div>
       </div>
@@ -86,6 +90,8 @@ defmodule UselessMachineWeb.SequenceLive do
 
     cond do
       text_index < (@button_frame - 1) ->
+        Logger.debug("at text_index #{text_index}")
+
       # Display the next text and schedule the following one
         Process.send_after(self(), :next_text, @display_time)
         {:noreply, assign(socket,

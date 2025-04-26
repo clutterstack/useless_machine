@@ -4,12 +4,14 @@ defmodule UselessMachineWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fly_region_header_to_session
     plug :fetch_live_flash
     plug :put_root_layout, html: {UselessMachineWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
+
+  #     plug :fly_region_header_to_session
+
 
   pipeline :localhost_only do
     plug UselessMachineWeb.Plugs.LocalhostOnly
@@ -47,6 +49,7 @@ defmodule UselessMachineWeb.Router do
     end
   end
 
+  # This gets where the request came from
   def fly_region_header_to_session(conn, _opts) do
     header = get_req_header(conn, "fly-region")
     conn |> put_session(:fly_region, header)
