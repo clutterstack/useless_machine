@@ -41,7 +41,7 @@ defmodule UselessMachine.StatusClient do
       {:timeout, Application.get_env(:useless_machine, :http_timeout, 5000)},
       {:connect_timeout, Application.get_env(:useless_machine, :http_connect_timeout, 3000)}
     ]
-    Logger.info("Sending status update to where_machines at #{inspect url}: #{inspect(payload)}")
+    Logger.info("Sending status update to #{inspect url}: #{inspect(payload)}")
 
     #{:ok, Req.Response.t()} | {:error, Exception.t()}
     case Req.post(

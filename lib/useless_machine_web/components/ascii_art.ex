@@ -9,7 +9,6 @@ defmodule UselessMachineWeb.AsciiArt do
     file_contents =
       if is_binary(assigns.file_path) do
         assigns.file_path
-        # |> dbg
         |> File.read!()
       else
         # Logger.debug("No assign `file_path`")

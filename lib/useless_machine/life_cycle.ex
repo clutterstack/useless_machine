@@ -16,9 +16,9 @@ defmodule UselessMachine.LifeCycle do
     machine_id = System.get_env("FLY_MACHINE_ID")
     # Start polling immediately
     send(self(), :check_readiness)
-    Logger.info("Starting self_destruct genserver on Machine #{machine_id}")
+    Logger.debug("Starting self_destruct genserver on Machine #{machine_id}")
 
-    Logger.info("Setting self-destruct timer for #{@shutoff_after} ms")
+    Logger.debug("Setting self-destruct timer for #{@shutoff_after} ms")
     schedule_shutoff()
     {:ok, %{attempts: 0}}
   end
@@ -65,7 +65,7 @@ defmodule UselessMachine.LifeCycle do
 
   defp check_health_endpoint do
     port = System.get_env("PORT") || "4040"
-    Logger.info("check_health_endpoint about to request health at http://localhost:#{port}/health")
+    Logger.debug("check_health_endpoint about to request health at http://localhost:#{port}/health")
     case Req.get("http://localhost:#{port}/health", receive_timeout: 50) do
       {:ok, %{status: 200}} -> :ok
       _ -> :error

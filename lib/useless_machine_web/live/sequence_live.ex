@@ -71,6 +71,11 @@ defmodule UselessMachineWeb.SequenceLive do
     end
   end
 
+  # def terminate(_reason, socket) do
+  #   IO.puts("LiveView with ID #{socket.id} is terminating.")
+  #   # UselessMachineWeb.Endpoint.broadcast("machine_path:#{path}", "disconnect", %{})
+  # end
+
   # <div class="mt-4 text-sm text-gray-200">
   # <p>Displaying message <%= @text_index %> of <%= @num_files %></p>
 # </div>
@@ -137,20 +142,23 @@ defmodule UselessMachineWeb.SequenceLive do
           sequence_complete: true
         )}
     true ->
-      Logger.debug("No more files. Shutting down.")
-      Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-      # Process.send_after(self(), :shutdown_app, 10)
-      {:noreply, socket}
+      Logger.info("No more files. Shutting down.")
+      # Logger.debug("The current_file assign is #{socket.assigns.current_file}")
+      Process.send_after(self(), :shutdown_app, 10)
+      # Meanwhile send the client to a deadview so it doesn't try to reconnect and end up getting a different instance
+      {:noreply, redirect(socket, to: ~p"/bye")}
     end
   end
 
   def handle_info(:shutdown_app, socket) do
+    mach_id = System.get_env("FLY_MACHINE_ID")
     # Log shutdown message
-    Logger.info("Sequence complete, shutting down application")
+    Logger.info("handling :shutdown_app")
+    # UselessMachineWeb.Endpoint.broadcast("machine_path:#{mach_id}", "disconnect", %{})
     # Tell where_machines app Machine is stopping.
     UselessMachine.StatusClient.send_status("stopping")
      # Give some time for the HTTP request to complete before shutting down
-     :timer.sleep(2000)
+     :timer.sleep(500)
     # Stop system
     Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
       System.stop(0)

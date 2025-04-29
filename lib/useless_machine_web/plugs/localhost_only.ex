@@ -1,4 +1,4 @@
-defmodule UselessMachineWeb.Plugs.LocalhostOnly do
+defmodule UselessMachineWeb.LocalhostOnly do
   import Plug.Conn
 
   require Logger
@@ -8,10 +8,10 @@ defmodule UselessMachineWeb.Plugs.LocalhostOnly do
   def call(conn, _opts) do
     # Get the client's IP address
     client_ip = conn.remote_ip
-    Logger.info("In LocalhostOnly, client_ip is #{inspect client_ip}")
+    Logger.debug("In LocalhostOnly, client_ip is #{inspect client_ip}")
 
     if is_localhost?(client_ip) do
-      Logger.info("yes, this request comes from localhost.")
+      Logger.debug("yes, this request comes from localhost.")
       conn
     else
       Logger.warning("the healthcheck call didn't come from localhost.")

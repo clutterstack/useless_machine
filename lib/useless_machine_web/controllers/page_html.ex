@@ -6,5 +6,8 @@ defmodule UselessMachineWeb.PageHTML do
   """
   use UselessMachineWeb, :html
 
+  alias UselessMachineWeb.AsciiArt
+  require Logger
+
   embed_templates "page_html/*"
 end

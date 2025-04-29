@@ -14,17 +14,11 @@ defmodule UselessMachineWeb.Router do
 
 
   pipeline :localhost_only do
-    plug UselessMachineWeb.Plugs.LocalhostOnly
+    plug UselessMachineWeb.LocalhostOnly
   end
 
   pipeline :api do
     plug :accepts, ["json"]
-  end
-
-  scope "/", UselessMachineWeb do
-    pipe_through :browser
-    get "/machine/:mach_id", PageController, :replay_to_machine
-    # get "/machine/:mach_id", PageController, :direct_to_machine
   end
 
   # Localhost-only route for health check ()
@@ -42,11 +36,28 @@ defmodule UselessMachineWeb.Router do
     # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
+    # scope "/local", UselessMachineWeb do
+    #   pipe_through [:browser, UselessMachineWeb.RouteHandler]
+    #   live "/", SequenceLive
+    # end
+
     scope "/dev", UselessMachineWeb do
       pipe_through :browser
-      live "/", SequenceLive
       live_dashboard "/dashboard", metrics: UselessMachineWeb.Telemetry
     end
+  end
+
+  scope "/", UselessMachineWeb do
+    pipe_through :browser
+    # pipe_through :browser
+
+    get "/bye", PageController, :bye
+    # pipe_through [:browser, UselessMachineWeb.RouteHandler]
+    # get "/redirect/:mach_id", PageController, :replay_to_machine
+    live_session :default, on_mount: UselessMachineWeb.CheckMachine do
+      live "/:mach_id", SequenceLive
+    end
+    # get "/machine/:mach_id", PageController, :direct_to_machine
   end
 
   # This gets where the request came from
