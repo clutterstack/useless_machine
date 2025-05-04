@@ -48,7 +48,7 @@ defmodule UselessMachineWeb.Router do
   end
 
   scope "/", UselessMachineWeb do
-    pipe_through :browser
+    pipe_through [:browser, UselessMachineWeb.RouteHandler]
     # pipe_through :browser
 
     get "/bye", PageController, :bye
@@ -56,6 +56,7 @@ defmodule UselessMachineWeb.Router do
     # get "/redirect/:mach_id", PageController, :replay_to_machine
     live_session :default, on_mount: UselessMachineWeb.CheckMachine do
       live "/:mach_id", SequenceLive
+      # live "/machine/:mach_id", SequenceLive
     end
     # get "/machine/:mach_id", PageController, :direct_to_machine
   end

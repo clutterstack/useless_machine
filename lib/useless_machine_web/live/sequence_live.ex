@@ -146,7 +146,8 @@ defmodule UselessMachineWeb.SequenceLive do
       # Logger.debug("The current_file assign is #{socket.assigns.current_file}")
       Process.send_after(self(), :shutdown_app, 10)
       # Meanwhile send the client to a deadview so it doesn't try to reconnect and end up getting a different instance
-      {:noreply, redirect(socket, to: ~p"/bye")}
+      # {:noreply, redirect(socket, to: ~p"/bye")}
+      {:noreply, socket}
     end
   end
 

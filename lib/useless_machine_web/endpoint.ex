@@ -1,5 +1,6 @@
 defmodule UselessMachineWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :useless_machine
+  import Plug.Conn
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
@@ -10,6 +11,13 @@ defmodule UselessMachineWeb.Endpoint do
     signing_salt: "9Zu2b4iy",
     same_site: "Lax"
   ]
+
+  # def call(conn, opts) do
+  #   case UselessMachineWeb.RouteHandler.call(conn, opts) do
+  #     %Plug.Conn{halted: true} = conn -> conn
+  #     conn -> super(conn, opts)
+  #   end
+  # end
 
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],

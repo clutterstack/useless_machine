@@ -7,24 +7,53 @@ defmodule UselessMachineWeb.RouteHandler do
   def init(opts), do: opts
 
   def call(conn, _opts) do
+
+    Logger.info("In RouteHandler, request path is #{conn.request_path}")
+    # Logger.info("What else do we have to look at? conn: #{inspect conn, pretty: true}")
+
+    conn
+      # |> fetch_query_params()
+      |> handle_conn()
+
+
+  end
+
+  def handle_conn(conn) do
     this_machine = System.get_env("FLY_MACHINE_ID")
     path = conn.request_path |> Path.basename()
 
+    # [path] = conn.path_info
+    Logger.info("In RouteHandler, path_info is #{inspect path}")
+    #path_info: ["machine", "local"],
+
     Logger.info("in RouteHandler, this_machine is #{this_machine} and path is #{path}")
+    # Using a `machine` part to the path to make it easy to tell that apart from health, assets,
+    # live_reload, etc. etc. in path
 
     case path do
-      ^this_machine ->
-        Logger.info("Requested #{path} is indeed this Machine so carry on.")
-        # Allow the request to continue to the LiveView
 
-        conn |> put_session(:live_socket_id, "machine_path:#{path}")
-      _ ->
-        Logger.info("Requested #{path} but this is #{this_machine}")
-        # Redirect with a 301 and custom header
+      ^this_machine ->
+        Logger.info("Requested Machine is indeed this Machine so carry on.")
+        # Allow the request to continue to the LiveView
         conn
-        |> put_resp_header("fly-replay", "instance=#{path}")
-        |> send_resp(301, "")
-        |> halt()
+
+      requested_machine ->
+          Logger.info("Requested #{requested_machine} but this is #{this_machine}")
+          # Redirect with a 301 and custom header
+          conn
+          |> put_resp_header("fly-replay", "instance=#{requested_machine}")
+          |> send_resp(301, "")
+          |> halt()
+
+      something_else -> Logger.info("in RouteHandler, path was an unexpected #{something_else}")
+          conn
+
+
+        # conn |> fetch_session(_opts)
+        #     |> put_session(:live_socket_id, "machine_path:#{path}")
+
     end
+
+
   end
 end
