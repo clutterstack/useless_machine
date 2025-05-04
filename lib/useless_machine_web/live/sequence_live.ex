@@ -16,7 +16,7 @@ defmodule UselessMachineWeb.SequenceLive do
 
   # %{"fly_region" => fly_region}
   def mount(params, _session, socket) do
-    Logger.info("what's in the params? #{inspect params}")
+    Logger.info("In SequenceLive mount callback. params is #{inspect params}")
     # Start the sequence on mount
     if connected?(socket) do
       # Logger.info("fly_region: #{inspect fly_region}")
