@@ -12,12 +12,13 @@ defmodule UselessMachineWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  # def call(conn, opts) do
-  #   case UselessMachineWeb.RouteHandler.call(conn, opts) do
-  #     %Plug.Conn{halted: true} = conn -> conn
-  #     conn -> super(conn, opts)
-  #   end
-  # end
+  # https://peterullrich.com/request-routing-and-sticky-sessions-in-phoenix-on-fly
+  def call(conn, opts) do
+    case UselessMachineWeb.RouteHandler.call(conn, opts) do
+      %Plug.Conn{halted: true} = conn -> conn # if it was redirected, it gets halted in the plug; leave it halted
+      conn -> super(conn, opts) # if the plug passed it through, now send it to the default version of call/2
+    end
+  end
 
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],

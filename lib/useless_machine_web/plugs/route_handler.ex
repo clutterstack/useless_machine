@@ -1,52 +1,74 @@
 defmodule UselessMachineWeb.RouteHandler do
+  use Plug.Builder # saves writing explicit init and stuff
   import Plug.Conn
   # import Phoenix.Controller, only: [redirect: 2]
 
+
   require Logger
 
-  def init(opts), do: opts
+  @cookie_key "fly-machine-id"
+  @cookie_ttl 5 * 60 * 1000 # 5 minutes; Machines shut down in one minute anyway
 
-  def call(conn, _opts) do
-    Logger.info("In RouteHandler, request path is #{conn.request_path}")
+  def call(conn, opts) do
     conn
-      |> handle_conn()
+    |> fetch_query_params()
+    |> fetch_cookies()
+    |> handle_conn(opts)
+# might want conn.request_path?
   end
 
-  def handle_conn(conn) do
-    this_machine = System.get_env("FLY_MACHINE_ID")
-    path = conn.request_path |> Path.basename()
 
-    # [path] = conn.path_info
-    #path_info: ["machine", "local"],
+  def handle_conn(%Plug.Conn{params: params} = conn, _opts) do
+    machine_id = System.get_env("FLY_MACHINE_ID") #Application.get_env(:chat, :fly_machine_id)
+    param_id = Map.get(params, "instance")
+    cookie_id = Map.get(conn.req_cookies, @cookie_key, machine_id)
+    # Logger.info("In RouteHandler, request path is #{conn.request_path}")
+    # Logger.info("In RouteHandler, param_id is #{param_id}")
+    # Logger.info("In RouteHandler, cookie_id is #{cookie_id}")
 
-    Logger.info("in RouteHandler, this_machine is #{this_machine} and path is #{path}")
-    # Using a `machine` part to the path to make it easy to tell that apart from health, assets,
-    # live_reload, etc. etc. in path
 
-    case path do
 
-      ^this_machine ->
-        Logger.info("RouteHandler: Requested Machine is indeed this Machine so carry on.")
-        # Allow the request to continue to the LiveView
+    cond do
+      param_id && param_id == "health" ->
+        Logger.info("Health endpoint. Carry on as normal.")
         conn
 
-      requested_machine ->
-          Logger.info("RouteHandler: Requested #{requested_machine} but this is #{this_machine}")
-          # Redirect with a 301 and custom header
-          conn
-          |> put_resp_header("fly-replay", "instance=#{requested_machine}")
-          |> send_resp(301, "")
-          |> halt()
+      param_id && param_id == machine_id ->
+        Logger.info("Correct machine based on parameter #{param_id}. Set cookie and let pass.")
+        put_resp_cookie(conn, @cookie_key, machine_id, max_age: @cookie_ttl)
 
-      something_else -> Logger.info("in RouteHandler, path was an unexpected #{something_else}")
-          conn
+      param_id && param_id != machine_id ->
+        Logger.info("Incorrect machine #{machine_id} based on parameter #{param_id}. Redirect.")
+        redirect_to_machine(conn, param_id)
 
+      cookie_id && cookie_id == machine_id ->
+        Logger.info("Correct machine based on cookie #{cookie_id}. Let pass.")
+        conn
 
-        # conn |> fetch_session(_opts)
-        #     |> put_session(:live_socket_id, "machine_path:#{path}")
+      cookie_id && cookie_id != machine_id ->
+        Logger.info("Incorrect machine #{machine_id} based on cookie #{cookie_id}. Redirect.")
+        redirect_to_machine(conn, cookie_id)
 
+      true ->
+        Logger.info("No parameter or cookie. Let pass.")
+        conn
     end
-
-
   end
+
+  defp redirect_to_machine(conn, requested_machine) do
+    conn
+    |> put_resp_header("fly-replay", "instance=#{requested_machine}")
+    |> put_status(307)
+    |> Phoenix.Controller.text("redirecting...")
+    |> halt()
+  end
+
+
+  # my redirects were a little different; not sure if the send_resp was a problem
+          # Redirect with a 301 and custom header
+          # conn
+          # |> put_resp_header("fly-replay", "instance=#{requested_machine}")
+          # |> send_resp(301, "")
+          # |> halt()
+
 end

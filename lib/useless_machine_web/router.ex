@@ -56,12 +56,13 @@ defmodule UselessMachineWeb.Router do
     #If there are no regular web requests defined under a live session, then the pipe_through checks are not necessary.
     # https://hexdocs.pm/phoenix_live_view/security-model.html
     # EXCEPT that I can't do fly-replay without getting into a plug
-    pipe_through [:browser, UselessMachineWeb.RouteHandler]
-    # pipe_through :browser
+    # pipe_through [:browser, UselessMachineWeb.RouteHandler]
+    pipe_through :browser
 
-    live_session :default, on_mount: UselessMachineWeb.CheckMachine do
-      live "/:mach_id", SequenceLive
-    end
+    # live_session :default, on_mount: UselessMachineWeb.CheckMachine do
+      live "/", SequenceLive
+
+    # end
     # get "/machine/:mach_id", PageController, :direct_to_machine
   end
 

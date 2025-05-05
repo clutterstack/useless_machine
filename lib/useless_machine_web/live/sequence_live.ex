@@ -43,8 +43,8 @@ defmodule UselessMachineWeb.SequenceLive do
   end
 
   def handle_params(params, uri, socket) do
-    params |> dbg
-    uri |> dbg
+    # params |> dbg
+    # uri |> dbg
     {:noreply, socket}
   end
 
