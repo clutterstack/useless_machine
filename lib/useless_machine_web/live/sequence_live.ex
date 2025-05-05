@@ -42,6 +42,13 @@ defmodule UselessMachineWeb.SequenceLive do
     )}
   end
 
+  def handle_params(params, uri, socket) do
+    params |> dbg
+    uri |> dbg
+    {:noreply, socket}
+  end
+
+
   # amber: text-[#ffb700]
   def render(assigns) do
     if (assigns.light_on) do
@@ -144,11 +151,11 @@ defmodule UselessMachineWeb.SequenceLive do
     true ->
       Logger.info("No more files. Shutting down.")
       # Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-      # Process.send_after(self(), :shutdown_app, 10)
+      Process.send_after(self(), :shutdown_app, 10)
       # Meanwhile send the client to a deadview so it doesn't try to reconnect and
       # either find a different instance or show a blank page when it can't
-      {:noreply, redirect(socket, to: ~p"/bye")}
-      # {:noreply, socket}
+      #{:noreply, redirect(socket, to: ~p"/bye")}
+      {:noreply, socket}
     end
   end
 

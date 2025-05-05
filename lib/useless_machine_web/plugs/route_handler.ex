@@ -7,15 +7,9 @@ defmodule UselessMachineWeb.RouteHandler do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-
     Logger.info("In RouteHandler, request path is #{conn.request_path}")
-    # Logger.info("What else do we have to look at? conn: #{inspect conn, pretty: true}")
-
     conn
-      # |> fetch_query_params()
       |> handle_conn()
-
-
   end
 
   def handle_conn(conn) do
@@ -23,7 +17,6 @@ defmodule UselessMachineWeb.RouteHandler do
     path = conn.request_path |> Path.basename()
 
     # [path] = conn.path_info
-    Logger.info("In RouteHandler, path_info is #{inspect path}")
     #path_info: ["machine", "local"],
 
     Logger.info("in RouteHandler, this_machine is #{this_machine} and path is #{path}")
@@ -33,12 +26,12 @@ defmodule UselessMachineWeb.RouteHandler do
     case path do
 
       ^this_machine ->
-        Logger.info("Requested Machine is indeed this Machine so carry on.")
+        Logger.info("RouteHandler: Requested Machine is indeed this Machine so carry on.")
         # Allow the request to continue to the LiveView
         conn
 
       requested_machine ->
-          Logger.info("Requested #{requested_machine} but this is #{this_machine}")
+          Logger.info("RouteHandler: Requested #{requested_machine} but this is #{this_machine}")
           # Redirect with a 301 and custom header
           conn
           |> put_resp_header("fly-replay", "instance=#{requested_machine}")

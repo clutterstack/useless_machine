@@ -2,7 +2,7 @@ defmodule UselessMachine.LifeCycle do
   use GenServer
   require Logger
 
-  @shutoff_after :timer.seconds(6000)
+  @shutoff_after :timer.seconds(60)
   @poll_interval 200 # milliseconds
   @max_attempts 30   # 6 seconds max
 
