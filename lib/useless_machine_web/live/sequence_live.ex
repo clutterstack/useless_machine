@@ -16,19 +16,31 @@ defmodule UselessMachineWeb.SequenceLive do
 
   # %{"fly_region" => fly_region}
   def mount(params, _session, socket) do
-    Logger.info("In SequenceLive mount callback. params is #{inspect params}")
+    # Preload the ascii images from their files
+    ascii_frames =
+      get_static_files(@ascii_dir)
+      |> Enum.map(fn file_path ->
+        {file_path, File.read!(file_path)}
+      end)
+      |> Enum.into(%{})
+
+    first_file = Enum.at(get_static_files(@ascii_dir), 0)
+    first_content = Map.get(ascii_frames, first_file)
+
     # Start the sequence on mount
     if connected?(socket) do
       # Logger.info("fly_region: #{inspect fly_region}")
       send(self(), :start_sequence)
     end
+
     fly_region = System.get_env("FLY_REGION") || "unknown"
     txt_files = get_static_files(@ascii_dir)
-    first_file = Enum.at(txt_files, 0)
 
     {:ok, assign(socket,
       fly_region: fly_region,
       current_file: first_file,
+      current_content: first_content,
+      ascii_frames: ascii_frames,
       text_index: 1,
       file_path: nil,
       sequence_complete: false,
@@ -42,13 +54,6 @@ defmodule UselessMachineWeb.SequenceLive do
     )}
   end
 
-  def handle_params(params, uri, socket) do
-    # params |> dbg
-    # uri |> dbg
-    {:noreply, socket}
-  end
-
-
   # amber: text-[#ffb700]
   def render(assigns) do
     if (assigns.light_on) do
@@ -59,7 +64,7 @@ defmodule UselessMachineWeb.SequenceLive do
           <div>This is Fly Machine {get_mach_id()} in <%= @fly_region %></div>
         </div>
         <div class="flex flex-col mt-16 sm:mt-12 items-center justify-center">
-          <AsciiArt.ascii_art file_path={@current_file} class={@txt_classes}/>
+          <AsciiArt.ascii_art content={@current_content} class={@txt_classes}/>
         </div>
       </div>
       """
@@ -71,7 +76,7 @@ defmodule UselessMachineWeb.SequenceLive do
           <div class={[@sequence_complete && "text-green-200", "self-end"]}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
         </div>
         <div class="flex flex-col mt-16 sm:mt-12 items-center justify-center">
-          <AsciiArt.ascii_art file_path={@current_file} class={@txt_classes}/>
+          <AsciiArt.ascii_art content={@current_content} class={@txt_classes}/>
         </div>
       </div>
       """
@@ -99,64 +104,53 @@ defmodule UselessMachineWeb.SequenceLive do
     text_index = socket.assigns.text_index
     files = socket.assigns.files
     num_files = socket.assigns.num_files
+    ascii_frames = socket.assigns.ascii_frames
+    current_file = Enum.at(files, text_index)
+    current_content = Map.get(ascii_frames, current_file)
 
-    cond do
-      text_index < (@button_frame - 1) ->
-        Logger.debug("at text_index #{text_index}")
+    if text_index < num_files do
+      delay = set_delay(text_index, num_files)
+      Logger.debug("at text_index #{text_index}")
+      Process.send_after(self(), :next_text, delay)
 
-      # Display the next text and schedule the following one
-        Process.send_after(self(), :next_text, @display_time)
-        {:noreply, assign(socket,
-          current_file: Enum.at(files, text_index),
-          text_index: text_index + 1
-        )}
-      text_index == (@button_frame - 1) ->
-      # Display the next text and schedule the following one
-        Process.send_after(self(), :next_text, @hang_fire)
-        {:noreply, assign(socket,
-          current_file: Enum.at(files, text_index),
-          text_index: text_index + 1
-        )}
-      text_index == @button_frame ->
-        # Display the next text and schedule the following one
-        Process.send_after(self(), :next_text, @button_press)
-        {:noreply, assign(socket,
-          current_file: Enum.at(files, text_index),
-          text_index: text_index + 1
-        )}
-      text_index == @button_frame + 1 ->
-        # Display the next text and schedule the following one
-        Process.send_after(self(), :next_text, @button_press)
-        {:noreply, assign(socket,
-          current_file: Enum.at(files, text_index),
-          text_index: text_index + 1,
-          light_on: false
-        )}
-        text_index < (num_files - 1) ->
-          # Display the next text and schedule the following one
-          Process.send_after(self(), :next_text, @display_time)
+      cond do
+        text_index == (num_files - 1) ->
+          # All texts displayed, prepare for shutdown
+          Logger.debug("All non-blank texts displayed, prepare for shutdown")
           {:noreply, assign(socket,
-            current_file: Enum.at(files, text_index),
+            current_file: current_file,
+            current_content: current_content,
+            text_index: text_index + 1,
+            sequence_complete: true
+          )}
+
+        text_index == @button_frame + 1 ->
+          # Display the next text and schedule the following one
+          {:noreply, assign(socket,
+            current_file: current_file,
+            current_content: current_content,
+            text_index: text_index + 1,
+            light_on: false
+          )}
+
+        true ->
+          # Display the next text and schedule the following one
+          {:noreply, assign(socket,
+            current_file: current_file,
+            current_content: current_content,
             text_index: text_index + 1
           )}
-      text_index == (num_files - 1) ->
-        # All texts displayed, prepare for shutdown
-        Logger.debug("All non-blank texts displayed, prepare for shutdown")
-        Process.send_after(self(), :next_text, 10)
-        {:noreply, assign(socket,
-          current_file: Enum.at(files, text_index),
-          text_index: text_index + 1,
-          sequence_complete: true
-        )}
-    true ->
-      Logger.info("No more files. Shutting down.")
-      # Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-      Process.send_after(self(), :shutdown_app, 10)
-      # Meanwhile send the client to a deadview so it doesn't try to reconnect and
-      # either find a different instance or show a blank page when it can't
-      #{:noreply, redirect(socket, to: ~p"/bye")}
-      {:noreply, socket}
-    end
+        end
+      else
+
+        Logger.info("No more files. Shutting down.")
+        # Logger.debug("The current_file assign is #{socket.assigns.current_file}")
+        Process.send_after(self(), :shutdown_app, 10)
+        # Meanwhile send the client to a deadview so it doesn't try to reconnect and
+        # either find a different instance or show a blank page when it can't
+        #{:noreply, redirect(socket, to: ~p"/bye")}
+        {:noreply, socket}
+      end
   end
 
   def handle_info(:shutdown_app, socket) do
@@ -191,6 +185,18 @@ defmodule UselessMachineWeb.SequenceLive do
       |> Enum.map(fn file -> Path.join([static_path, file]) end)
     else
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def set_delay(text_index, num_files) do
+    cond do
+      text_index < (@button_frame - 1) -> @display_time
+      text_index == (@button_frame - 1) -> @hang_fire
+      text_index == @button_frame -> @button_press
+      text_index == @button_frame + 1 -> @button_press
+      text_index < (num_files - 1) -> @display_time
+      text_index == (num_files - 1) -> 10
+      true -> 0
     end
   end
 
