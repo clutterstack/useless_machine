@@ -29,7 +29,6 @@ defmodule UselessMachineWeb.SequenceLive do
 
     # Start the sequence on mount
     if connected?(socket) do
-      # Logger.info("fly_region: #{inspect fly_region}")
       send(self(), :start_sequence)
     end
 
@@ -126,6 +125,7 @@ defmodule UselessMachineWeb.SequenceLive do
 
         text_index == @button_frame + 1 ->
           # Display the next text and schedule the following one
+          # Turn off the "light" here
           {:noreply, assign(socket,
             current_file: current_file,
             current_content: current_content,
@@ -140,34 +140,24 @@ defmodule UselessMachineWeb.SequenceLive do
             current_content: current_content,
             text_index: text_index + 1
           )}
-        end
-      else
-
-        Logger.info("No more files. Shutting down.")
-        # Logger.debug("The current_file assign is #{socket.assigns.current_file}")
-        Process.send_after(self(), :shutdown_app, 10)
-        # Meanwhile send the client to a deadview so it doesn't try to reconnect and
-        # either find a different instance or show a blank page when it can't
-        #{:noreply, redirect(socket, to: ~p"/bye")}
-        {:noreply, socket}
       end
-  end
-
-  def handle_info(:shutdown_app, socket) do
-    mach_id = System.get_env("FLY_MACHINE_ID")
-    # Log shutdown message
-    Logger.info("handling :shutdown_app")
-    # UselessMachineWeb.Endpoint.broadcast("machine_path:#{mach_id}", "disconnect", %{})
-    # Tell where_machines app Machine is stopping.
-    UselessMachine.StatusClient.send_status("stopping")
-     # Give some time for the HTTP request to complete before shutting down
-     :timer.sleep(500)
-    # Stop system
-    Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
-      System.stop(0)
-    end)
-
-    {:noreply, socket}
+    else
+      Logger.info("No more files. Shutting down.")
+      UselessMachine.StatusClient.send_status("stopping")
+      # Start an async task to shut down the Machine, so that it won't
+      # be interrupted by the redirect
+      Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
+        # Give some time for the HTTP request to complete before shutting down
+        :timer.sleep(500)
+        # Stop system
+        System.stop(0)
+      end)
+      # Meanwhile send the client to a regular controller view so it doesn't try to
+      # reconnect when the Machine shuts down, and
+      # so it keeps showing that last frame
+      {:noreply, redirect(socket, to: ~p"/bye")}
+      # {:noreply, socket}
+    end
   end
 
   @doc """

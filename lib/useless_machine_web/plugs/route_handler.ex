@@ -1,8 +1,6 @@
 defmodule UselessMachineWeb.RouteHandler do
   use Plug.Builder # saves writing explicit init and stuff
   import Plug.Conn
-  # import Phoenix.Controller, only: [redirect: 2]
-
 
   require Logger
 
@@ -58,17 +56,11 @@ defmodule UselessMachineWeb.RouteHandler do
   defp redirect_to_machine(conn, requested_machine) do
     conn
     |> put_resp_header("fly-replay", "instance=#{requested_machine}")
+    |> put_resp_header("fly-replay-cache", "useless-machine.fly.dev/machine?instance=#{requested_machine}")
+    |> put_resp_header("fly-replay-cache-ttl-secs", "60")
     |> put_status(307)
     |> Phoenix.Controller.text("redirecting...")
     |> halt()
   end
-
-
-  # my redirects were a little different; not sure if the send_resp was a problem
-          # Redirect with a 301 and custom header
-          # conn
-          # |> put_resp_header("fly-replay", "instance=#{requested_machine}")
-          # |> send_resp(301, "")
-          # |> halt()
 
 end

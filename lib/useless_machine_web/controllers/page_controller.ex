@@ -17,12 +17,9 @@ defmodule UselessMachineWeb.PageController do
   # end
 
   def bye(conn, _params) do
-    file = Path.join(:code.priv_dir(:useless_machine), "static/ascii/0000-14.txt")
-    # static_path = Application.app_dir(:useless_machine, ["priv", "static", "ascii"])
-    # static_path = Application.app_dir(:useless_machine, ["priv", "static", "ascii"])
-    render(conn, :bye, file: file)
+    content = File.read!(Path.join(:code.priv_dir(:useless_machine), "static/ascii/0000-14.txt"))
+    render(conn, :bye, content: content)
   end
-
 
 
   def get_static_files(dirname) do

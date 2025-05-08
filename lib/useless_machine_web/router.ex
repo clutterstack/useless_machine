@@ -10,7 +10,7 @@ defmodule UselessMachineWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  #     plug :fly_region_header_to_session
+  #  plug :fly_region_header_to_session
 
 
   pipeline :localhost_only do
@@ -36,11 +36,6 @@ defmodule UselessMachineWeb.Router do
     # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
-    # scope "/local", UselessMachineWeb do
-    #   pipe_through [:browser, UselessMachineWeb.RouteHandler]
-    #   live "/", SequenceLive
-    # end
-
     scope "/dev", UselessMachineWeb do
       pipe_through :browser
       live_dashboard "/dashboard", metrics: UselessMachineWeb.Telemetry
@@ -53,28 +48,14 @@ defmodule UselessMachineWeb.Router do
   end
 
   scope "/", UselessMachineWeb do
-    #If there are no regular web requests defined under a live session, then the pipe_through checks are not necessary.
-    # https://hexdocs.pm/phoenix_live_view/security-model.html
-    # EXCEPT that I can't do fly-replay without getting into a plug
-    # pipe_through [:browser, UselessMachineWeb.RouteHandler]
     pipe_through :browser
-
-    # live_session :default, on_mount: UselessMachineWeb.CheckMachine do
-      live "/", SequenceLive
-
-    # end
-    # get "/machine/:mach_id", PageController, :direct_to_machine
+    live "/machine", SequenceLive
   end
 
-  # This gets where the request came from
+  # This gets where the request came from (unused for the moment)
   def fly_region_header_to_session(conn, _opts) do
     header = get_req_header(conn, "fly-region")
     conn |> put_session(:fly_region, header)
   end
-
-  def get_mach_id do
-    System.get_env("FLY_MACHINE_ID")
-  end
-
 
 end
