@@ -5,8 +5,6 @@ defmodule UselessMachineWeb.PageHTML do
   See the `page_html` directory for all templates available.
   """
   use UselessMachineWeb, :html
-
-  alias UselessMachineWeb.AsciiArt
   require Logger
 
   embed_templates "page_html/*"

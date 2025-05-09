@@ -20,6 +20,12 @@ if System.get_env("PHX_SERVER") do
   config :useless_machine, UselessMachineWeb.Endpoint, server: true
 end
 
+config :useless_machine,
+  machine_end_state: System.get_env("USELESS_MACHINE_END_STATE", "stopped"),
+  final_view: System.get_env("USELESS_MACHINE_FINAL_VIEW", "bye"),
+  life_cycle_end: System.get_env("USELESS_MACHINE_LIFE_CYCLE_END", "stopped"),
+  life_cycle_timeout: System.get_env("USELESS_MACHINE_SHUTDOWN_TIMEOUT", "60000")
+
 if config_env() == :prod do
   # database_path =
   #   System.get_env("DATABASE_PATH") ||

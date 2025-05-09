@@ -11,7 +11,6 @@ defmodule UselessMachine.StatusClient do
   - "stopping" - Machine is shutting down
   """
   # TODO? If not successful, send to top1.of.where.internal
-  # https://fly.io/docs/networking/dynamic-request-routing/#the-fly-force-instance-id-header
   # Not too worried about this, but consider: what happens if the user gets reconnected on a different
   # instance somehow? Is that likely? Is the experience weirded out anyway, if that happens? Prolly.
   def send_status(status) when status in ["listening", "stopping"] do
@@ -41,7 +40,7 @@ defmodule UselessMachine.StatusClient do
       {:timeout, Application.get_env(:useless_machine, :http_timeout, 5000)},
       {:connect_timeout, Application.get_env(:useless_machine, :http_connect_timeout, 3000)}
     ]
-    Logger.info("Sending status update to #{inspect url}: #{inspect(payload)}")
+    Logger.debug("Sending status update to #{inspect url}: #{inspect(payload)}")
 
     #{:ok, Req.Response.t()} | {:error, Exception.t()}
     case Req.post(

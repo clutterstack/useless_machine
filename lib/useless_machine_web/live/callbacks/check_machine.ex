@@ -44,15 +44,15 @@ defmodule UselessMachineWeb.CheckMachine do
 
 
   # Helper to extract path from connect_params (available during reconnections)
-  defp extract_path_from_connect_params(socket) do
-    Logger.info("In extract_path_from_connect_params.")
-    case socket.private do
-      %{connect_params: %{"_live_referer" => referer}} ->
-        URI.parse(referer).path |> String.trim_leading("/") |> String.split("/")
-      _ ->
-        []
-    end
-  end
+  # defp extract_path_from_connect_params(socket) do
+  #   Logger.info("In extract_path_from_connect_params.")
+  #   case socket.private do
+  #     %{connect_params: %{"_live_referer" => referer}} ->
+  #       URI.parse(referer).path |> String.trim_leading("/") |> String.split("/")
+  #     _ ->
+  #       []
+  #   end
+  # end
 
 
 

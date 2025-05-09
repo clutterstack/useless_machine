@@ -41,10 +41,13 @@ defmodule UselessMachineWeb.RouteHandler do
 
       cookie_id && cookie_id == machine_id ->
         Logger.info("Correct machine based on cookie #{cookie_id}. Let pass.")
+        # Logger.info("(request path is #{conn.request_path})")
         conn
 
       cookie_id && cookie_id != machine_id ->
         Logger.info("Incorrect machine #{machine_id} based on cookie #{cookie_id}. Redirect.")
+        # Logger.info("(request path is #{conn.request_path})")
+
         redirect_to_machine(conn, cookie_id)
 
       true ->

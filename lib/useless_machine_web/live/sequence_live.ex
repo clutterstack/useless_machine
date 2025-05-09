@@ -2,6 +2,7 @@ defmodule UselessMachineWeb.SequenceLive do
   use UselessMachineWeb, :live_view
   alias UselessMachineWeb.AsciiArt
   require Logger
+  alias UselessMachine.Cities
 
   # Define module attributes
   @initial_dwell 2500 # milliseconds before animation starts
@@ -15,7 +16,7 @@ defmodule UselessMachineWeb.SequenceLive do
   @txt_classes "text-[7px] sm:text-[10px] font-black"
 
   # %{"fly_region" => fly_region}
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     # Preload the ascii images from their files
     ascii_frames =
       get_static_files(@ascii_dir)
@@ -49,7 +50,9 @@ defmodule UselessMachineWeb.SequenceLive do
       container_classes: @container_classes,
       message_classes: @message_classes,
       txt_classes: @txt_classes,
-      frame_delay: @initial_dwell
+      frame_delay: @initial_dwell,
+      end_state: Application.get_env(:useless_machine, :machine_end_state),
+      final_view: Application.get_env(:useless_machine, :final_view)
     )}
   end
 
@@ -60,7 +63,7 @@ defmodule UselessMachineWeb.SequenceLive do
       <div class={[@container_classes, "bg-[#240000] text-red-500"]}>
         <div class={@message_classes}>
           <h1 class="text-xl sm:text-2xl font-bold mb-1 text-[#ffb700] h-[2lh] sm:h-auto mr-4">You started a Useless Machine</h1>
-          <div>This is Fly Machine {get_mach_id()} in <%= @fly_region %></div>
+          <div>This is Fly Machine {get_mach_id()} in <%= Cities.short(@fly_region) %></div>
         </div>
         <div class="flex flex-col mt-16 sm:mt-12 items-center justify-center">
           <AsciiArt.ascii_art content={@current_content} class={@txt_classes}/>
@@ -103,9 +106,12 @@ defmodule UselessMachineWeb.SequenceLive do
     text_index = socket.assigns.text_index
     files = socket.assigns.files
     num_files = socket.assigns.num_files
+    final_view = socket.assigns.final_view
+    end_state = socket.assigns.end_state
     ascii_frames = socket.assigns.ascii_frames
     current_file = Enum.at(files, text_index)
     current_content = Map.get(ascii_frames, current_file)
+
 
     if text_index < num_files do
       delay = set_delay(text_index, num_files)
@@ -115,7 +121,7 @@ defmodule UselessMachineWeb.SequenceLive do
       cond do
         text_index == (num_files - 1) ->
           # All texts displayed, prepare for shutdown
-          Logger.debug("All non-blank texts displayed, prepare for shutdown")
+          Logger.debug("All texts displayed, prepare for shutdown")
           {:noreply, assign(socket,
             current_file: current_file,
             current_content: current_content,
@@ -142,21 +148,31 @@ defmodule UselessMachineWeb.SequenceLive do
           )}
       end
     else
-      Logger.info("No more files. Shutting down.")
-      UselessMachine.StatusClient.send_status("stopping")
-      # Start an async task to shut down the Machine, so that it won't
-      # be interrupted by the redirect
-      Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
-        # Give some time for the HTTP request to complete before shutting down
-        :timer.sleep(500)
-        # Stop system
-        System.stop(0)
-      end)
-      # Meanwhile send the client to a regular controller view so it doesn't try to
-      # reconnect when the Machine shuts down, and
-      # so it keeps showing that last frame
-      {:noreply, redirect(socket, to: ~p"/bye")}
-      # {:noreply, socket}
+      Logger.info("Finished sequence.")
+      if end_state == "stopped" do
+        Logger.info("Shutting down.")
+        UselessMachine.StatusClient.send_status("stopping")
+        # Start an async task to shut down the Machine, so that it won't
+        # be interrupted by the redirect
+        Task.Supervisor.start_child(UselessMachine.TaskSupervisor, fn ->
+          # Give some time for the HTTP request to complete before shutting down
+          :timer.sleep(500)
+          # Stop system
+          System.stop(0)
+        end)
+      else
+          Logger.info("Keeping Machine running")
+      end
+      if final_view == "bye" do
+        # Meanwhile send the client to a regular controller view so it doesn't try to
+        # reconnect when the Machine shuts down, and
+        # so it keeps showing that last frame
+        Logger.info("redirecting to classic Phoenix view to close WebSockets connection")
+        {:noreply, redirect(socket, to: ~p"/bye")}
+      else
+        Logger.info("staying in SequenceLive LiveView")
+        {:noreply, socket}
+      end
     end
   end
 
@@ -190,7 +206,7 @@ defmodule UselessMachineWeb.SequenceLive do
     end
   end
 
-  def get_mach_id() do
+  defp get_mach_id() do
     System.get_env("FLY_MACHINE_ID")
   end
 

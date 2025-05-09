@@ -2,7 +2,7 @@ defmodule UselessMachine.LifeCycle do
   use GenServer
   require Logger
 
-  @shutoff_after :timer.seconds(60)
+  # @shutoff_after :timer.seconds(60)
   @poll_interval 200 # milliseconds
   @max_attempts 30   # 6 seconds max
 
@@ -13,13 +13,16 @@ defmodule UselessMachine.LifeCycle do
 
   ## Server
   def init(_) do
-    machine_id = System.get_env("FLY_MACHINE_ID")
+    end_state = Application.get_env(:useless_machine, :life_cycle_end)
+    shutoff_after = String.to_integer(Application.get_env(:useless_machine, :life_cycle_timeout))
     # Start polling immediately
     send(self(), :check_readiness)
-    Logger.debug("Starting self_destruct genserver on Machine #{machine_id}")
-
-    Logger.debug("Setting self-destruct timer for #{@shutoff_after} ms")
-    schedule_shutoff()
+    if end_state == "stopped" do
+      Logger.info("Setting self-destruct timer for #{shutoff_after} ms")
+      schedule_shutoff(shutoff_after)
+    else
+      Logger.info("Not setting self-destruct timer.")
+    end
     {:ok, %{attempts: 0}}
   end
 
@@ -72,7 +75,7 @@ defmodule UselessMachine.LifeCycle do
     end
   end
 
-  defp schedule_shutoff do
-    Process.send_after(self(), :shutoff, @shutoff_after)
+  defp schedule_shutoff(shutoff_after) do
+    Process.send_after(self(), :shutoff, shutoff_after)
   end
 end
