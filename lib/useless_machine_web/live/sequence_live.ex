@@ -6,9 +6,9 @@ defmodule UselessMachineWeb.SequenceLive do
 
   # Define module attributes
   @initial_dwell 2500 # milliseconds before animation starts
-  @display_time 120 # milliseconds between messages, usually
+  @display_time 140 # milliseconds between messages, usually
   @hang_fire 650 # pause before pushing button
-  @button_press 120 # pushing button
+  @button_press 200 # pushing button
   @ascii_dir "ascii"
   @button_frame 6 # the frame at which the button is depressed, turning off the lights
   @container_classes "container relative my-8 mx-auto px-0 w-fit rounded-xl p-4 pb-0 box-border border-2 border-neutral-600 font-mono"
@@ -74,7 +74,7 @@ defmodule UselessMachineWeb.SequenceLive do
       ~H"""
       <div class={[@container_classes, "text-slate-400"]}>
         <div class={@message_classes}>
-          <h1 class="text-xl sm:text-2xl font-bold mb-1 h-[2lh] sm:h-auto">{@sequence_complete && "Bye" || "VM self-destructing"}</h1>
+          <h1 class="text-xl sm:text-2xl font-bold mb-1 h-[2lh] sm:h-auto">{@sequence_complete && "This Machine is no more." || "VM self-destructing"}</h1>
           <div class={[@sequence_complete && "text-green-200", "self-end"]}><.link href="https://where.fly.dev">Back to where.fly.dev</.link></div>
         </div>
         <div class="flex flex-col mt-16 sm:mt-12 items-center justify-center">
