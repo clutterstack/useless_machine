@@ -40,23 +40,46 @@ defmodule UselessMachine.StatusClient do
       {:timeout, Application.get_env(:useless_machine, :http_timeout, 5000)},
       {:connect_timeout, Application.get_env(:useless_machine, :http_connect_timeout, 3000)}
     ]
-    Logger.debug("Sending status update to #{inspect url}: #{inspect(payload)}")
+    Logger.info("Sending status update to #{inspect url}: #{inspect(payload)}")
 
-    #{:ok, Req.Response.t()} | {:error, Exception.t()}
+    # Try the primary endpoint first
+    case send_request(url, payload, options) do
+      :ok ->
+        Logger.info("Status update sent successfully")
+        :ok
+      {:error, exception} ->
+        # If primary fails, try the fallback endpoint
+        Logger.warning("Error from Req on status update: #{inspect(exception)}. Trying fallback endpoint.")
+        try_fallback(payload, options)
+    end
+  end
+
+  defp send_request(url, payload, options) do
     case Req.post(
         url,
         json: payload,
         connect_options: [
           timeout: options[:connect_timeout],
           transport_opts: [inet6: true]
-          ],
+        ],
         receive_timeout: options[:timeout]
     ) do
-      {:ok, %Req.Response{}} ->
-        Logger.info("Status update sent successfully")
+      {:ok, %Req.Response{}} -> :ok
+      error -> error
+    end
+  end
+
+  defp try_fallback(payload, options) do
+    # Use top1.nearest.of.where.internal for fallback
+    fallback_url = "http://top1.nearest.of.where.internal:4001/api/machine_status"
+    Logger.info("Attempting fallback to #{fallback_url}")
+
+    case send_request(fallback_url, payload, options) do
+      :ok ->
+        Logger.info("Status update sent successfully via fallback")
         :ok
       {:error, exception} ->
-        Logger.error("Error from Req on status update: #{inspect(exception)}")
+        Logger.error("Fallback also failed: #{inspect(exception)}")
         {:error, exception}
     end
   end
