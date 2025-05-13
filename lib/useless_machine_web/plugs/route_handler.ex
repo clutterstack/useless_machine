@@ -59,10 +59,10 @@ defmodule UselessMachineWeb.RouteHandler do
   defp redirect_to_machine(conn, requested_machine) do
     conn
     |> put_resp_header("fly-replay", "instance=#{requested_machine}")
-    |> put_resp_header("fly-replay-cache", "useless-machine.fly.dev/machine?instance=#{requested_machine}")
-    |> put_resp_header("fly-replay-cache-ttl-secs", "60")
+    |> put_resp_header("fly-replay-cache", "useless-machine.fly.dev/machine?instance=#{requested_machine}") # this doesn't work since no wildcard
+    |> put_resp_header("fly-replay-cache-ttl-secs", "60") # moot, see prev line
     |> put_status(307)
-    |> Phoenix.Controller.text("redirecting...")
+    # |> Phoenix.Controller.text("redirecting...")
     |> halt()
   end
 
