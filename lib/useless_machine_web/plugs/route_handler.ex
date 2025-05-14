@@ -19,6 +19,7 @@ defmodule UselessMachineWeb.RouteHandler do
   def handle_conn(%Plug.Conn{params: params} = conn, _opts) do
     machine_id = System.get_env("FLY_MACHINE_ID") #Application.get_env(:chat, :fly_machine_id)
     param_id = Map.get(params, "instance")
+    path_base = Path.basename(conn.request_path) |> dbg
     cookie_id = Map.get(conn.req_cookies, @cookie_key, machine_id)
     # Logger.info("In RouteHandler, request path is #{conn.request_path}")
     # Logger.info("In RouteHandler, param_id is #{param_id}")
@@ -27,7 +28,7 @@ defmodule UselessMachineWeb.RouteHandler do
 
 
     cond do
-      param_id && param_id == "health" ->
+      path_base && path_base == "health" ->
         Logger.info("Health endpoint. Carry on as normal.")
         conn
 
@@ -51,8 +52,10 @@ defmodule UselessMachineWeb.RouteHandler do
         redirect_to_machine(conn, cookie_id)
 
       true ->
-        Logger.info("No parameter or cookie. Let pass.")
+        Logger.info("No parameter or cookie. Send 404.")
         conn
+        |> send_resp(404, "Not found")
+        |> halt()
     end
   end
 

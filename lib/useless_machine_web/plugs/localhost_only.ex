@@ -16,7 +16,6 @@ defmodule UselessMachineWeb.LocalhostOnly do
     else
       Logger.warning("the healthcheck call didn't come from localhost.")
       conn
-      |> put_resp_content_type("application/json")
       |> send_resp(404, "Not found")
       |> halt()
     end
