@@ -5,7 +5,7 @@ defmodule UselessMachineWeb.RouteHandler do
   require Logger
 
   @cookie_key "fly-machine-id"
-  @cookie_ttl 5 * 60 * 1000 # 5 minutes; Machines shut down in one minute anyway
+  @cookie_ttl 1 * 60 * 1000 # ms
 
   def call(conn, opts) do
     conn
@@ -19,7 +19,7 @@ defmodule UselessMachineWeb.RouteHandler do
   def handle_conn(%Plug.Conn{params: params} = conn, _opts) do
     machine_id = System.get_env("FLY_MACHINE_ID") #Application.get_env(:chat, :fly_machine_id)
     param_id = Map.get(params, "instance")
-    path_base = Path.basename(conn.request_path) |> dbg
+    path_base = Path.basename(conn.request_path) # |> dbg
     cookie_id = Map.get(conn.req_cookies, @cookie_key, machine_id)
     # Logger.info("In RouteHandler, request path is #{conn.request_path}")
     # Logger.info("In RouteHandler, param_id is #{param_id}")
