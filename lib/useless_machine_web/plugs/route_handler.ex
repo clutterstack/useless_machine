@@ -64,7 +64,8 @@ defmodule UselessMachineWeb.RouteHandler do
     |> put_resp_header("fly-replay", "instance=#{requested_machine}")
     |> put_resp_header("fly-replay-cache", "useless-machine.fly.dev/machine?instance=#{requested_machine}") # this doesn't work since no wildcard
     |> put_resp_header("fly-replay-cache-ttl-secs", "60") # moot, see prev line
-    |> put_status(307)
+    # |> put_status(307)
+    |> send_resp(307, "")
     # |> Phoenix.Controller.text("redirecting...")
     |> halt()
   end
