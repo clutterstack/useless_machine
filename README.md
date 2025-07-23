@@ -6,7 +6,7 @@ The Useless Machine portion of https://where.fly.dev, a toy web application that
 
 A visitor to https://where.fly.dev pushes a button, which spawns a Fly Machine VM running this little Phoenix/LiveView server, which plays a short animation before shutting itself down. The Machine is configured such that the platform destroys it on shutdown.
 
-![Screenshot: Title "You started a Useless Machine", message "This is Fly Machine 7811eedf292108 in Toronto", then a text-based image of a hand emerging from a trap door, about to push a button](./doc/images/almost.png)
+![Screenshot: Title "You started a Useless Machine", message "This is Fly Machine 7811eedf292108 in Toronto", then a text-based image of a hand emerging from a trap door, about to push a button](./docs/images/almost.png)
 
 I wrote about how this app uses `fly-replay` to enforce the one-to-one mapping between visitors and their very own ephemeral VMs: [Machine Affinity with LiveView and fly-replay](https://clutterstack.com/posts/2025-06-01-liveview-machine-affinity).
 
